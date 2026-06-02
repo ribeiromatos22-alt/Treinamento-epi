@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinamento EPI – Campo & Operacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0A;
+  --bg2: #111111;
+  --bg3: #1A1A1A;
+  --border: rgba(255,255,255,0.08);
+  --text: #FFFFFF;
+  --muted: #888;
+  --dim: #444;
+  --orange: #FF4D00;
+  --orange2: #FF7A3D;
+  --green: #00C47A;
+  --red: #FF3B30;
+  --yellow: #FFB800;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* PROGRESS BAR TOP */
+.prog-top { position:fixed; top:0; left:0; height:3px; background:var(--orange); z-index:200; transition:width 0.4s ease; width:0%; }
+
+/* NAV */
+nav {
+  position:fixed; top:3px; left:0; right:0; z-index:100;
+  background:rgba(10,10,10,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px; gap:16px;
+}
+.nav-logo {
+  display:flex; align-items:center; gap:10px;
+}
+.nav-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--orange);
+  box-shadow:0 0 8px var(--orange);
+}
+.nav-title { font-size:13px; font-weight:600; letter-spacing:0.5px; }
+.nav-badge {
+  font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+  color:var(--muted); border:1px solid var(--border); padding:3px 8px; border-radius:4px;
+}
+.nav-prog { font-size:12px; color:var(--muted); }
+
+/* HERO */
+.hero {
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:80px 24px 60px;
+  position:relative; overflow:hidden;
+}
+.hero-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,77,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,77,0,0.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+}
+.hero-glow {
+  position:absolute; top:30%; left:50%; transform:translate(-50%,-50%);
+  width:600px; height:400px;
+  background:radial-gradient(ellipse, rgba(255,77,0,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-nr {
+  font-size:11px; font-weight:600; letter-spacing:4px; text-transform:uppercase;
+  color:var(--orange); margin-bottom:28px;
+  display:flex; align-items:center; gap:12px; justify-content:center;
+}
+.hero-nr::before, .hero-nr::after {
+  content:''; display:block; width:40px; height:1px; background:var(--orange); opacity:0.5;
+}
+.hero h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(64px,12vw,120px);
+  line-height:0.9; letter-spacing:2px;
+  margin-bottom:20px;
+}
+.hero h1 .line2 { color:var(--orange); display:block; }
+.hero-sub {
+  font-size:15px; color:var(--muted); max-width:420px;
+  margin:0 auto 48px; line-height:1.7;
+}
+.hero-meta {
+  display:flex; gap:32px; justify-content:center; flex-wrap:wrap;
+  margin-bottom:52px;
+}
+.hm { text-align:center; }
+.hm-num {
+  font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--orange); line-height:1;
+}
+.hm-label { font-size:11px; color:var(--dim); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+.hero-cta {
+  background:var(--orange); color:#fff;
+  border:none; padding:16px 40px; border-radius:4px;
+  font-family:'Inter',sans-serif; font-weight:600; font-size:15px;
+  cursor:pointer; letter-spacing:0.5px;
+  transition:all 0.2s;
+}
+.hero-cta:hover { background:#e64400; transform:translateY(-2px); }
+.hero-scroll { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); color:var(--dim); font-size:12px; letter-spacing:2px; text-transform:uppercase; animation:bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+/* SECTIONS */
+section { padding:80px 24px; max-width:900px; margin:0 auto; }
+.sec-eyebrow {
+  font-size:10px; font-weight:600; letter-spacing:4px; text-transform:uppercase;
+  color:var(--orange); margin-bottom:12px;
+}
+.sec-h {
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(36px,6vw,56px);
+  letter-spacing:1px; margin-bottom:8px; line-height:1;
+}
+.sec-sub { font-size:14px; color:var(--muted); margin-bottom:48px; line-height:1.6; }
+
+/* EPI CARDS — full width stacked */
+.epi-stack { display:flex; flex-direction:column; gap:2px; margin-bottom:60px; }
+
+.epi-row {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color 0.2s;
+}
+.epi-row:hover { border-color:rgba(255,77,0,0.3); }
+.epi-row.open { border-color:var(--orange); }
+
+.epi-trigger {
+  display:grid;
+  grid-template-columns:56px 1fr auto;
+  align-items:center;
+  gap:20px;
+  padding:20px 24px;
+}
+.epi-num {
+  font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--dim);
+  line-height:1; transition:color 0.2s;
+}
+.epi-row.open .epi-num { color:var(--orange); }
+.epi-info-title { font-weight:600; font-size:16px; margin-bottom:3px; }
+.epi-info-norm { font-size:11px; color:var(--orange2); letter-spacing:1px; }
+.epi-arrow { font-size:18px; color:var(--dim); transition:transform 0.3s; }
+.epi-row.open .epi-arrow { transform:rotate(180deg); color:var(--orange); }
+
+.epi-body {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.4s ease;
+  border-top:0px solid var(--border);
+}
+.epi-row.open .epi-body { max-height:700px; border-top-width:1px; }
+.epi-body-inner { padding:28px 24px 32px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+@media(max-width:560px){ .epi-body-inner{ grid-template-columns:1fr; } }
+
+.epi-col-label {
+  font-size:10px; font-weight:600; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dim); margin-bottom:10px;
+}
+.epi-col-text { font-size:14px; color:var(--muted); line-height:1.7; }
+
+.steps { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.steps li {
+  display:flex; gap:12px; align-items:flex-start;
+  font-size:13px; color:var(--muted); line-height:1.5;
+}
+.step-n {
+  width:22px; height:22px; border-radius:50%;
+  border:1px solid var(--orange); color:var(--orange);
+  font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:1px;
+}
+
+.risks { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.risk-tag {
+  font-size:11px; font-weight:600; letter-spacing:0.5px;
+  padding:4px 10px; border-radius:3px;
+  background:rgba(255,59,48,0.1); color:var(--red);
+  border:1px solid rgba(255,59,48,0.2);
+}
+.risk-tag.warn {
+  background:rgba(255,184,0,0.08); color:var(--yellow);
+  border-color:rgba(255,184,0,0.2);
+}
+
+.swap-info {
+  grid-column:1/-1;
+  background:rgba(255,77,0,0.06);
+  border:1px solid rgba(255,77,0,0.15);
+  border-left:3px solid var(--orange);
+  border-radius:3px;
+  padding:12px 16px;
+  font-size:13px; color:var(--muted); line-height:1.6;
+}
+.swap-info strong { color:var(--text); }
+
+/* NR17 */
+.nr17-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:60px; }
+.nr17-block {
+  border:1px solid var(--border);
+  border-top:2px solid var(--orange);
+  border-radius:4px;
+  padding:20px;
+  background:var(--bg2);
+}
+.nr17-icon { font-size:22px; margin-bottom:12px; }
+.nr17-title { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:0.5px; margin-bottom:6px; }
+.nr17-text { font-size:13px; color:var(--muted); line-height:1.6; }
+
+/* QUIZ */
+.quiz-wrap {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  margin-bottom:60px;
+}
+.quiz-hd {
+  border-bottom:1px solid var(--border);
+  padding:24px;
+  display:flex; align-items:center; gap:16px;
+}
+.quiz-hd-bar { width:3px; height:32px; background:var(--orange); border-radius:2px; }
+.quiz-hd h3 { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.5px; }
+.quiz-hd p { font-size:12px; color:var(--muted); margin-top:2px; }
+.quiz-inner { padding:28px 24px; }
+
+.qdots { display:flex; gap:4px; margin-bottom:28px; }
+.qdot { flex:1; height:3px; background:var(--bg3); border-radius:2px; transition:background 0.3s; }
+.qdot.done { background:var(--green); }
+.qdot.cur { background:var(--orange); }
+
+.qq { display:none; }
+.qq.act { display:block; animation:slideIn 0.25s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+
+.qnum { font-size:10px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+.qtext { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:0.5px; line-height:1.2; margin-bottom:22px; }
+.qopts { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.qopt {
+  display:flex; align-items:flex-start; gap:14px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:3px; padding:14px 16px;
+  cursor:pointer; font-size:14px; color:var(--text); text-align:left;
+  transition:border-color 0.15s;
+}
+.qopt:hover { border-color:rgba(255,77,0,0.35); }
+.qopt.sc { border-color:var(--green); background:rgba(0,196,122,0.06); color:#8fffd0; }
+.qopt.sw { border-color:var(--red); background:rgba(255,59,48,0.06); color:#ffaaaa; }
+.qopt.cr { border-color:var(--green); }
+.qltr {
+  width:24px; height:24px; border-radius:3px;
+  background:var(--border); color:var(--muted);
+  font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.qfb { display:none; padding:12px 16px; border-radius:3px; font-size:13px; line-height:1.5; margin-bottom:16px; }
+.qfb.show { display:block; }
+.qfb.ok { background:rgba(0,196,122,0.08); border:1px solid rgba(0,196,122,0.2); color:#8fffd0; }
+.qfb.er { background:rgba(255,59,48,0.08); border:1px solid rgba(255,59,48,0.2); color:#ffaaaa; }
+
+.btn-main {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--orange); color:#fff; border:none;
+  padding:12px 24px; border-radius:3px;
+  font-family:'Inter',sans-serif; font-weight:600; font-size:14px;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-main:hover { background:#e64400; }
+.btn-ghost {
+  display:inline-flex; align-items:center; gap:8px;
+  background:transparent; color:var(--muted);
+  border:1px solid var(--border); padding:12px 24px; border-radius:3px;
+  font-family:'Inter',sans-serif; font-weight:600; font-size:14px;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-ghost:hover { border-color:var(--orange); color:var(--orange); }
+
+.qresult { display:none; text-align:center; padding:16px 0; }
+.qresult.show { display:block; }
+.qr-score { font-family:'Bebas Neue',sans-serif; font-size:80px; color:var(--orange); line-height:1; margin:16px 0 8px; }
+.qr-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; margin-bottom:12px; }
+.qr-text { font-size:14px; color:var(--muted); max-width:380px; margin:0 auto 28px; line-height:1.6; }
+
+/* DECLARAÇÃO */
+.decl-wrap {
+  background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:32px;
+}
+.decl-wrap h3 { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:0.5px; margin-bottom:6px; }
+.decl-wrap > p { font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.6; }
+
+.legal-strip {
+  background:rgba(255,77,0,0.06);
+  border:1px solid rgba(255,77,0,0.15);
+  border-left:3px solid var(--orange);
+  border-radius:3px; padding:12px 16px;
+  font-size:13px; color:var(--muted); line-height:1.5;
+  margin-bottom:24px;
+}
+.legal-strip strong { color:var(--text); }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+@media(max-width:500px){ .form-grid{ grid-template-columns:1fr; } }
+.ff { display:flex; flex-direction:column; gap:5px; }
+.fl { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+.fi {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:3px; padding:10px 14px;
+  color:var(--text); font-family:'Inter',sans-serif; font-size:14px;
+  outline:none; transition:border-color 0.2s;
+}
+.fi:focus { border-color:var(--orange); }
+.sig-wrap { grid-column:1/-1; }
+.sig-canvas {
+  background:var(--bg3); border:1px dashed var(--dim);
+  border-radius:3px; width:100%; height:80px;
+  cursor:crosshair; touch-action:none; display:block;
+}
+.sig-hint { font-size:11px; color:var(--dim); margin-top:5px; }
+.sig-hint a { color:var(--orange2); text-decoration:none; }
+
+footer {
+  border-top:1px solid var(--border);
+  padding:28px 24px; text-align:center;
+  font-size:12px; color:var(--dim); letter-spacing:0.5px;
+}
+</style>
+</head>
+<body>
+
+<div class="prog-top" id="prog-top"></div>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-dot"></div>
+    <div class="nav-title">EPI · Campo & Operacional</div>
+  </div>
+  <div class="nav-badge">NR6 · NR17</div>
+  <div class="nav-prog" id="nav-prog">0% concluído</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-nr">NR6 · NR17 · Prevenção</div>
+  <h1>
+    EQUIPAMENTO
+    <span class="line2">SALVA VIDAS.</span>
+  </h1>
+  <p class="hero-sub">O EPI não é burocracia. É o que fica entre você e um acidente. Aprenda a usar cada um do jeito certo.</p>
+  <div class="hero-meta">
+    <div class="hm"><div class="hm-num">7</div><div class="hm-label">EPIs</div></div>
+    <div class="hm"><div class="hm-num">20</div><div class="hm-label">Minutos</div></div>
+    <div class="hm"><div class="hm-num">7</div><div class="hm-label">Questões</div></div>
+  </div>
+  <button class="hero-cta" onclick="document.getElementById('modulo1').scrollIntoView({behavior:'smooth'})">
+    Começar treinamento ↓
+  </button>
+  <div class="hero-scroll">↓ rolar</div>
+</div>
+
+<!-- MÓDULO 1 -->
+<section id="modulo1">
+  <div class="sec-eyebrow">Módulo 01</div>
+  <div class="sec-h">Seus EPIs</div>
+  <p class="sec-sub">Clique em cada equipamento para ver instruções, riscos e quando trocar.</p>
+
+  <div class="epi-stack" id="epi-stack">
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">01</div>
+        <div>
+          <div class="epi-info-title">Cinta de coluna</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.3</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Para que serve</div>
+            <p class="epi-col-text">Suporte lombar durante levantamento de cargas. Reduz a pressão nos discos intervertebrais. <strong style="color:#fff">Não substitui</strong> a técnica correta — é um apoio, não uma solução completa.</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Posicione acima dos quadris cobrindo toda a lombar</li>
+              <li><span class="step-n">2</span>Aperte antes de levantar ou carregar carga</li>
+              <li><span class="step-n">3</span>Afrouxe nas pausas — não use apertada o dia todo</li>
+              <li><span class="step-n">4</span>Dobre os joelhos e mantenha costas retas ao levantar</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Hérnia de disco</span>
+              <span class="risk-tag">Lombalgia crônica</span>
+              <span class="risk-tag warn">Lesão por esforço</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Quando trocar:</strong> velcro não fecha, rasgo visível ou deformação. Solicite reposição ao responsável imediatamente.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">02</div>
+        <div>
+          <div class="epi-info-title">Abafador de ruído</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.1</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Para que serve</div>
+            <p class="epi-col-text">Protege em ambientes com ruído acima de 85 dB — compressores, ferramentas elétricas, sirenes. <strong style="color:#fff">A surdez ocupacional é permanente e irreversível.</strong> Não existe remédio.</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Cubra completamente os pavilhões auriculares</li>
+              <li><span class="step-n">2</span>Ajuste a faixa até selar bem os dois lados</li>
+              <li><span class="step-n">3</span>Coloque ANTES de entrar na área ruidosa</li>
+              <li><span class="step-n">4</span>Verifique se as almofadas estão íntegras</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Perda auditiva permanente</span>
+              <span class="risk-tag">PAIR</span>
+              <span class="risk-tag warn">Zumbido crônico</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Quando trocar:</strong> almofadas endurecidas, rachadas ou com vedação ruim. Nunca improvise com algodão.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">03</div>
+        <div>
+          <div class="epi-info-title">Protetor auricular (plug)</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.1</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Diferença do abafador</div>
+            <p class="epi-col-text">O plug vai dentro do canal auditivo. Mais leve e discreto, ideal para uso prolongado. O abafador cobre por fora. Use o que for fornecido pela empresa — ambos têm CA (Certificado de Aprovação).</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como inserir</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Amasse o plug de espuma até virar um cone fino</li>
+              <li><span class="step-n">2</span>Puxe a orelha para cima e para trás</li>
+              <li><span class="step-n">3</span>Insira e segure por 20–30 segundos</li>
+              <li><span class="step-n">4</span>Ao retirar, gire devagar — nunca puxe rápido</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Higiene</div>
+            <p class="epi-col-text">Reutilizável: lavar com água e sabão, secar bem. Descartável: um uso. <strong style="color:#fff">Nunca compartilhe.</strong></p>
+          </div>
+          <div class="swap-info">
+            <strong>Descartável:</strong> troque diariamente. <strong>Reutilizável:</strong> troque quando deformar ou perder elasticidade.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">04</div>
+        <div>
+          <div class="epi-info-title">Óculos de proteção</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.5</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Para que serve</div>
+            <p class="epi-col-text">Partículas, faíscas, respingos químicos e fumaça. Em incêndio, o calor e a fumaça causam lesão ocular em segundos. <strong style="color:#fff">Cegueira é irreversível.</strong></p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Verifique lentes — sem riscos profundos</li>
+              <li><span class="step-n">2</span>Ajuste hastes ou elástico para boa aderência</li>
+              <li><span class="step-n">3</span>Antiembaçante: borrife água, seque com pano macio</li>
+              <li><span class="step-n">4</span>Nunca coloque no chão ou dentro do capacete</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Corpo estranho</span>
+              <span class="risk-tag">Queimadura ocular</span>
+              <span class="risk-tag warn">Respingos químicos</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Quando trocar:</strong> lentes com riscos profundos que comprometam a visão ou elástico rompido.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">05</div>
+        <div>
+          <div class="epi-info-title">Luva de proteção</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.6</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Tipos e usos</div>
+            <div class="risks" style="gap:8px">
+              <span class="risk-tag warn">Raspa de couro → calor/abrasão</span>
+              <span class="risk-tag warn">Nitrílica → químicos</span>
+              <span class="risk-tag warn">Malha de aço → corte</span>
+            </div>
+            <p class="epi-col-text" style="margin-top:10px">Cada tipo protege de um risco específico. Use a certa para cada tarefa.</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Verifique furos ou rasgos antes de calçar</li>
+              <li><span class="step-n">2</span>Ajuste bem ao pulso</li>
+              <li><span class="step-n">3</span><strong style="color:var(--red)">NUNCA</strong> use próximo a partes giratórias</li>
+              <li><span class="step-n">4</span>Retire antes de anotar ou tocar celular</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Cortes e perfurações</span>
+              <span class="risk-tag">Queimaduras</span>
+              <span class="risk-tag warn">Contato químico</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Atenção:</strong> luva próxima a torno, broca ou serra pode ser puxada e arrastar a mão. Retire sempre nesses casos.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">06</div>
+        <div>
+          <div class="epi-info-title">Bota de segurança</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.7</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Para que serve</div>
+            <p class="epi-col-text"><strong style="color:#fff">Bico de aço:</strong> queda de objetos pesados. <strong style="color:#fff">Palmilha anti-perfurante:</strong> pisada em pregos e pontas. <strong style="color:#fff">Sola antiderrapante:</strong> superfícies molhadas ou com óleo.</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Amarre os cadarços — bota solta não protege o tornozelo</li>
+              <li><span class="step-n">2</span>Use meias de algodão</li>
+              <li><span class="step-n">3</span>Limpe ao fim do dia, especialmente com produtos químicos</li>
+              <li><span class="step-n">4</span>Verifique a sola antes de usar</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Esmagamento de pé</span>
+              <span class="risk-tag">Perfuração da planta</span>
+              <span class="risk-tag warn">Quedas e torções</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Quando trocar:</strong> sola lisa, bico exposto, palmilha furada ou bota úmida por dentro. Não espere desintegrar.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epi-row" onclick="toggleEpi(this)">
+      <div class="epi-trigger">
+        <div class="epi-num">07</div>
+        <div>
+          <div class="epi-info-title">Máscara de proteção respiratória</div>
+          <div class="epi-info-norm">NR6 · ITEM 1.2</div>
+        </div>
+        <div class="epi-arrow">▾</div>
+      </div>
+      <div class="epi-body">
+        <div class="epi-body-inner">
+          <div>
+            <div class="epi-col-label">Tipos e usos</div>
+            <div class="risks" style="gap:8px; margin-bottom:10px">
+              <span class="risk-tag warn">PFF1 → poeiras grossas</span>
+              <span class="risk-tag warn">PFF2 → fumaça / poeira fina</span>
+              <span class="risk-tag warn">PFF3 → agentes tóxicos</span>
+            </div>
+            <p class="epi-col-text">Na área de incêndio, a fumaça contém monóxido de carbono, CO₂ e partículas tóxicas. A máscara certa pode ser a diferença entre intoxicação e sobrevivência.</p>
+          </div>
+          <div>
+            <div class="epi-col-label">Como usar</div>
+            <ul class="steps">
+              <li><span class="step-n">1</span>Escolha o tipo correto para o agente presente</li>
+              <li><span class="step-n">2</span>Posicione sobre nariz e boca, molde a parte metálica ao nariz</li>
+              <li><span class="step-n">3</span>Faça o teste de vedação: expire com força — não deve vazar pelas laterais</li>
+              <li><span class="step-n">4</span>Barba impede vedação — a máscara não funciona com barba</li>
+            </ul>
+          </div>
+          <div>
+            <div class="epi-col-label">Riscos que previne</div>
+            <div class="risks">
+              <span class="risk-tag">Intoxicação por fumaça</span>
+              <span class="risk-tag">Inalação de partículas</span>
+              <span class="risk-tag warn">Lesão pulmonar</span>
+            </div>
+          </div>
+          <div class="swap-info">
+            <strong>Descartável:</strong> troque ao fim do turno ou se houver dano. <strong>Com filtro:</strong> troque o filtro conforme fabricante ou quando sentir resistência ao respirar. Nunca reutilize máscara descartável molhada.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /epi-stack -->
+</section>
+
+<!-- MÓDULO 2: NR17 -->
+<section id="modulo2" style="border-top:1px solid var(--border); padding-top:80px;">
+  <div class="sec-eyebrow">Módulo 02</div>
+  <div class="sec-h">NR17 no Campo</div>
+  <p class="sec-sub">Ergonomia não é coisa de escritório. Postura errada no trabalho causa lesão que acompanha você pelo resto da vida.</p>
+  <div class="nr17-grid">
+    <div class="nr17-block">
+      <div class="nr17-icon">🏋️</div>
+      <div class="nr17-title">Levantamento de carga</div>
+      <div class="nr17-text">Limite de 23kg individual (NR17). Acima disso: apoio de outra pessoa ou equipamento. Dobre os joelhos, costas retas, carga próxima ao corpo.</div>
+    </div>
+    <div class="nr17-block">
+      <div class="nr17-icon">🧍</div>
+      <div class="nr17-title">Postura no trabalho</div>
+      <div class="nr17-text">Evite curvamento prolongado. A cada 50 minutos em posição estática, faça 10 minutos de mobilidade. Sinalize ao líder se a tarefa exigir postura forçada.</div>
+    </div>
+    <div class="nr17-block">
+      <div class="nr17-icon">⏸</div>
+      <div class="nr17-title">Pausas obrigatórias</div>
+      <div class="nr17-text">Atividade com esforço repetitivo exige pausa regular. É direito legal e necessidade do seu corpo. Comunique ao líder se não conseguir pausar.</div>
+    </div>
+    <div class="nr17-block">
+      <div class="nr17-icon">🌡️</div>
+      <div class="nr17-title">Calor e hidratação</div>
+      <div class="nr17-text">Ambiente quente aumenta risco de fadiga e erro. Beba água a cada 20 minutos mesmo sem sede. Sinalize imediatamente se sentir tontura ou mal-estar.</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" style="border-top:1px solid var(--border); padding-top:80px;">
+  <div class="sec-eyebrow">Módulo 03</div>
+  <div class="sec-h">Quiz de fixação</div>
+  <p class="sec-sub">7 perguntas para confirmar que você absorveu o conteúdo.</p>
+
+  <div class="quiz-wrap">
+    <div class="quiz-hd">
+      <div class="quiz-hd-bar"></div>
+      <div>
+        <h3>Verificação de conhecimento</h3>
+        <p>Responda todas — você precisa de acerto para assinar a declaração</p>
+      </div>
+    </div>
+    <div class="quiz-inner">
+      <div class="qdots">
+        <div class="qdot cur" id="d0"></div>
+        <div class="qdot" id="d1"></div>
+        <div class="qdot" id="d2"></div>
+        <div class="qdot" id="d3"></div>
+        <div class="qdot" id="d4"></div>
+        <div class="qdot" id="d5"></div>
+        <div class="qdot" id="d6"></div>
+      </div>
+
+      <div class="qq act" id="q0">
+        <div class="qnum">01 / 07</div>
+        <div class="qtext">A cinta lombar elimina o risco de lesão nas costas?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,0,false)"><span class="qltr">A</span>Sim, com cinta pode levantar qualquer peso</button>
+          <button class="qopt" onclick="ans(this,0,true)"><span class="qltr">B</span>Não — reduz a pressão, mas não substitui a técnica correta</button>
+          <button class="qopt" onclick="ans(this,0,false)"><span class="qltr">C</span>Só precisa usar acima de 50kg</button>
+        </div>
+        <div class="qfb" id="f0"></div>
+        <button class="btn-main" id="n0" onclick="nx(1)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q1">
+        <div class="qnum">02 / 07</div>
+        <div class="qtext">A perda auditiva por ruído ocupacional é:</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,1,false)"><span class="qltr">A</span>Temporária, melhora com repouso</button>
+          <button class="qopt" onclick="ans(this,1,false)"><span class="qltr">B</span>Tratável com cirurgia na maioria dos casos</button>
+          <button class="qopt" onclick="ans(this,1,true)"><span class="qltr">C</span>Permanente e irreversível — só a prevenção resolve</button>
+        </div>
+        <div class="qfb" id="f1"></div>
+        <button class="btn-main" id="n1" onclick="nx(2)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q2">
+        <div class="qnum">03 / 07</div>
+        <div class="qtext">Quando você NÃO deve usar luva de proteção?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,2,true)"><span class="qltr">A</span>Próximo a partes giratórias de máquinas</button>
+          <button class="qopt" onclick="ans(this,2,false)"><span class="qltr">B</span>Ao carregar materiais pesados e ásperos</button>
+          <button class="qopt" onclick="ans(this,2,false)"><span class="qltr">C</span>Ao manusear ferramentas com superfície quente</button>
+        </div>
+        <div class="qfb" id="f2"></div>
+        <button class="btn-main" id="n2" onclick="nx(3)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q3">
+        <div class="qnum">04 / 07</div>
+        <div class="qtext">Qual é a forma correta de inserir o protetor auricular plug?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,3,false)"><span class="qltr">A</span>Inserir direto sem amassar</button>
+          <button class="qopt" onclick="ans(this,3,true)"><span class="qltr">B</span>Amassar o plug, puxar a orelha para cima/trás e segurar até expandir</button>
+          <button class="qopt" onclick="ans(this,3,false)"><span class="qltr">C</span>Molhar para amolecer antes de inserir</button>
+        </div>
+        <div class="qfb" id="f3"></div>
+        <button class="btn-main" id="n3" onclick="nx(4)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q4">
+        <div class="qnum">05 / 07</div>
+        <div class="qtext">Por que barba impede o uso correto da máscara de proteção?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,4,false)"><span class="qltr">A</span>É apenas uma recomendação estética</button>
+          <button class="qopt" onclick="ans(this,4,true)"><span class="qltr">B</span>A barba impede a vedação — a fumaça ou agente tóxico passa pelas laterais</button>
+          <button class="qopt" onclick="ans(this,4,false)"><span class="qltr">C</span>Só afeta máscaras do tipo PFF1</button>
+        </div>
+        <div class="qfb" id="f4"></div>
+        <button class="btn-main" id="n4" onclick="nx(5)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q5">
+        <div class="qnum">06 / 07</div>
+        <div class="qtext">O limite da NR17 para levantamento individual sem apoio é:</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,5,false)"><span class="qltr">A</span>30kg para homens, 15kg para mulheres</button>
+          <button class="qopt" onclick="ans(this,5,true)"><span class="qltr">B</span>23kg — acima disso é obrigatório apoio de pessoa ou equipamento</button>
+          <button class="qopt" onclick="ans(this,5,false)"><span class="qltr">C</span>Não há limite definido na norma</button>
+        </div>
+        <div class="qfb" id="f5"></div>
+        <button class="btn-main" id="n5" onclick="nx(6)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q6">
+        <div class="qnum">07 / 07</div>
+        <div class="qtext">A bota de segurança deve ser trocada quando:</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(this,6,false)"><span class="qltr">A</span>Completar 1 ano de uso, independente do estado</button>
+          <button class="qopt" onclick="ans(this,6,false)"><span class="qltr">B</span>Só quando o bico de aço estiver completamente exposto</button>
+          <button class="qopt" onclick="ans(this,6,true)"><span class="qltr">C</span>Sola lisa, bico exposto, palmilha furada ou bota úmida por dentro</button>
+        </div>
+        <div class="qfb" id="f6"></div>
+        <button class="btn-main" id="n6" onclick="showRes()" style="display:none">Ver resultado →</button>
+      </div>
+
+      <div class="qresult" id="qresult">
+        <div class="qr-score" id="rscore">7/7</div>
+        <div class="qr-title" id="rtitle">APROVADO</div>
+        <p class="qr-text" id="rtext">Conhecimento confirmado. Agora assine a declaração abaixo.</p>
+        <button class="btn-ghost" onclick="restartQ()">↺ Refazer</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DECLARAÇÃO -->
+<section id="declaracao" style="border-top:1px solid var(--border); padding-top:80px;">
+  <div class="sec-eyebrow">Declaração</div>
+  <div class="sec-h">Ciência e compromisso</div>
+  <p class="sec-sub">Confirme que leu, entendeu e se compromete com o uso correto dos EPIs.</p>
+
+  <div class="decl-wrap">
+    <div class="legal-strip">
+      <strong>Art. 158 da CLT:</strong> o trabalhador que se recusar injustificadamente ao uso dos EPIs fornecidos sujeita-se a sanções disciplinares, podendo culminar em dispensa por justa causa.
+    </div>
+    <div class="form-grid">
+      <div class="ff"><label class="fl">Nome completo</label><input type="text" class="fi" id="dnome" placeholder="Seu nome completo"></div>
+      <div class="ff"><label class="fl">Função / Cargo</label><input type="text" class="fi" id="dcargo" placeholder="Ex: Técnico de campo"></div>
+      <div class="ff"><label class="fl">Data</label><input type="date" class="fi" id="ddata"></div>
+      <div class="ff"><label class="fl">Matrícula (opcional)</label><input type="text" class="fi" id="dmat" placeholder="Opcional"></div>
+      <div class="ff sig-wrap">
+        <label class="fl">Assinatura</label>
+        <canvas class="sig-canvas" id="sigc"></canvas>
+        <div class="sig-hint">Assine com o mouse ou dedo · <a href="#" onclick="clrSig()">Limpar</a></div>
+      </div>
+    </div>
+    <button class="btn-main" onclick="gerarDoc()" style="width:100%;justify-content:center;font-size:15px;padding:14px;">
+      Gerar declaração para impressão →
+    </button>
+  </div>
+</section>
+
+<footer>
+  TREINAMENTO EPI · CAMPO & OPERACIONAL · NR6 e NR17<br>
+  Mantenha este documento acessível à equipe.
+</footer>
+
+<script>
+// Progress scroll
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = Math.round((window.scrollY / h) * 100);
+  document.getElementById('prog-top').style.width = pct + '%';
+  document.getElementById('nav-prog').textContent = pct + '% concluído';
+});
+
+// EPI toggle
+function toggleEpi(row) {
+  const isOpen = row.classList.contains('open');
+  document.querySelectorAll('.epi-row').forEach(r => r.classList.remove('open'));
+  if (!isOpen) row.classList.add('open');
+}
+
+// Quiz
+const fbs = [
+  { ok:'✓ Correto. A cinta é suporte — a técnica de levantamento (joelhos dobrados, costas retas) continua obrigatória.', er:'✗ Errado. A cinta reduz a pressão, mas não elimina o risco. A técnica correta é sempre necessária.' },
+  { ok:'✓ Correto. PAIR — Perda Auditiva Induzida por Ruído — é permanente. Só a prevenção funciona.', er:'✗ Errado. A perda auditiva por ruído é permanente e irreversível. Não existe cura.' },
+  { ok:'✓ Correto. Próximo a partes giratórias, a luva pode ser puxada e arrastar a mão junto — risco gravíssimo.', er:'✗ Errado. Próximo a tornos, brocas e serras, a luva é proibida — pode ser puxada com a mão dentro.' },
+  { ok:'✓ Correto. Amassar, puxar a orelha e segurar por 20–30s garante a vedação correta do canal auditivo.', er:'✗ Errado. O método correto: amassar o plug, puxar a orelha para cima/trás e segurar até expandir.' },
+  { ok:'✓ Correto. A barba impede a vedação lateral — fumaça ou agente tóxico penetra pelas bordas da máscara.', er:'✗ Errado. A barba quebra a vedação da máscara em todas as laterais — o agente tóxico entra.' },
+  { ok:'✓ Correto. 23kg é o limite da NR17 para levantamento individual sem apoio.', er:'✗ Errado. O limite da NR17 é 23kg. Acima disso, apoio de outra pessoa ou equipamento é obrigatório.' },
+  { ok:'✓ Correto. Qualquer comprometimento de sola, bico ou palmilha justifica troca imediata.', er:'✗ Errado. Sola lisa, bico exposto, palmilha furada ou bota úmida por dentro — qualquer um desses é motivo de troca.' }
+];
+let score = 0, currentQ = 0;
+
+function ans(btn, qi, correct) {
+  const qEl = document.getElementById('q' + qi);
+  qEl.querySelectorAll('.qopt').forEach(o => o.disabled = true);
+  const fb = document.getElementById('f' + qi);
+  const nb = document.getElementById('n' + qi);
+  if (correct) {
+    btn.classList.add('sc'); fb.textContent = fbs[qi].ok; fb.className = 'qfb show ok'; score++;
+  } else {
+    btn.classList.add('sw'); fb.textContent = fbs[qi].er; fb.className = 'qfb show er';
+    qEl.querySelectorAll('.qopt').forEach(o => { if (o.onclick.toString().includes('true')) o.classList.add('cr'); });
+  }
+  document.getElementById('d' + qi).classList.remove('cur');
+  document.getElementById('d' + qi).classList.add('done');
+  if (qi + 1 < 7) document.getElementById('d' + (qi + 1)).classList.add('cur');
+  nb.style.display = 'inline-flex';
+}
+
+function nx(n) {
+  document.getElementById('q' + (n-1)).classList.remove('act');
+  document.getElementById('q' + n).classList.add('act');
+}
+
+function showRes() {
+  document.getElementById('q6').classList.remove('act');
+  const r = document.getElementById('qresult'); r.classList.add('show');
+  const title = score >= 6 ? 'APROVADO' : score >= 4 ? 'QUASE LÁ' : 'REVISE O CONTEÚDO';
+  const text = score >= 6
+    ? 'Conhecimento confirmado. Agora assine a declaração abaixo.'
+    : score >= 4
+    ? 'Revise os itens que errou antes de assinar a declaração.'
+    : 'Leia o material novamente com atenção antes de avançar.';
+  document.getElementById('rscore').textContent = score + '/7';
+  document.getElementById('rtitle').textContent = title;
+  document.getElementById('rtext').textContent = text;
+}
+
+function restartQ() {
+  score = 0;
+  document.getElementById('qresult').classList.remove('show');
+  document.querySelectorAll('.qq').forEach((q, i) => {
+    q.classList.remove('act');
+    q.querySelectorAll('.qopt').forEach(o => { o.disabled=false; o.classList.remove('sc','sw','cr'); });
+    const fb = document.getElementById('f'+i); if(fb) fb.className='qfb';
+    const nb = document.getElementById('n'+i); if(nb) nb.style.display='none';
+    document.getElementById('d'+i).className='qdot';
+  });
+  document.getElementById('q0').classList.add('act');
+  document.getElementById('d0').classList.add('cur');
+}
+
+// Signature
+const c = document.getElementById('sigc');
+const ctx = c.getContext('2d');
+c.width = c.offsetWidth; c.height = c.offsetHeight;
+ctx.strokeStyle = '#FF4D00'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+let drawing = false;
+c.addEventListener('mousedown', e => { drawing=true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+c.addEventListener('mousemove', e => { if(!drawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
+c.addEventListener('mouseup', () => drawing=false);
+c.addEventListener('mouseleave', () => drawing=false);
+c.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const r=c.getBoundingClientRect(); ctx.beginPath(); ctx.moveTo(e.touches[0].clientX-r.left, e.touches[0].clientY-r.top); }, {passive:false});
+c.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing) return; const r=c.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX-r.left, e.touches[0].clientY-r.top); ctx.stroke(); }, {passive:false});
+c.addEventListener('touchend', () => drawing=false);
+function clrSig() { ctx.clearRect(0,0,c.width,c.height); }
+
+document.getElementById('ddata').value = new Date().toISOString().split('T')[0];
+
+function gerarDoc() {
+  const nome = document.getElementById('dnome').value.trim();
+  const cargo = document.getElementById('dcargo').value.trim();
+  const data = document.getElementById('ddata').value;
+  const mat = document.getElementById('dmat').value.trim();
+  const sigData = c.toDataURL();
+  if (!nome || !cargo) { alert('Preencha nome e cargo antes de gerar.'); return; }
+  const dataFmt = data ? new Date(data+'T12:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Declaração EPI – Campo</title>
+  <style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:24px;color:#111;font-size:14px;line-height:1.7}h1{font-size:18px;text-align:center;margin-bottom:4px}.sub{text-align:center;font-size:12px;color:#666;margin-bottom:32px;text-transform:uppercase;letter-spacing:1px}table{width:100%;border-collapse:collapse;margin:20px 0}td{padding:8px 12px;border:1px solid #ccc}td:first-child{font-weight:bold;width:28%;background:#f5f5f5}ul{padding-left:18px}ul li{margin-bottom:5px}.legal{background:#fff8f0;border:1px solid #e09000;border-left:4px solid #e09000;border-radius:4px;padding:12px 16px;margin:20px 0;font-size:13px}.sig-area{margin-top:32px;border-top:1px solid #ccc;padding-top:20px}@media print{body{margin:20px}}</style>
+  </head><body>
+  <h1>Declaração de Ciência – Treinamento EPI</h1>
+  <p class="sub">Campo &amp; Operacional · NR6 · NR17</p>
+  <table>
+    <tr><td>Nome</td><td>${nome}</td></tr>
+    <tr><td>Cargo / Função</td><td>${cargo}</td></tr>
+    ${mat?`<tr><td>Matrícula</td><td>${mat}</td></tr>`:''}
+    <tr><td>Data</td><td>${dataFmt}</td></tr>
+    <tr><td>Resultado quiz</td><td>${score}/7 questões corretas</td></tr>
+  </table>
+  <p>Eu, <strong>${nome}</strong>, declaro que participei e compreendi o treinamento sobre Equipamentos de Proteção Individual (NR6) e Ergonomia (NR17), tendo sido orientado sobre o uso correto dos seguintes EPIs:</p>
+  <ul>
+    <li>Cinta de coluna lombar</li>
+    <li>Abafador de ruído (concha auricular)</li>
+    <li>Protetor auricular plug</li>
+    <li>Óculos de proteção</li>
+    <li>Luva de proteção</li>
+    <li>Bota de segurança</li>
+    <li>Máscara de proteção respiratória</li>
+  </ul>
+  <p>Comprometo-me a utilizar os EPIs em todas as atividades que os exijam, comunicar qualquer EPI danificado ao responsável e não iniciar atividades de risco sem o equipamento adequado.</p>
+  <div class="legal"><strong>Art. 158 da CLT:</strong> o trabalhador que recusar injustificadamente o uso dos EPIs sujeita-se a sanções disciplinares, podendo culminar em dispensa por justa causa.</div>
+  <div class="sig-area">
+    <p><strong>Assinatura:</strong></p>
+    <img src="${sigData}" style="border:1px solid #ccc;border-radius:4px;padding:4px" width="300" height="80"><br><br>
+    <p>Local e data: _________________________, ${dataFmt}</p><br>
+    <p>Responsável / Empresa: _________________________</p>
+  </div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  win.document.close();
+}
+</script>
+</body>
+</html>

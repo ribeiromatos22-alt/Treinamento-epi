@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinamento Ergonomia – Equipe de Escritório</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1B4FD8;
+    --blue-light: #3B6FFF;
+    --blue-pale: #EEF3FF;
+    --indigo: #0F2A80;
+    --accent: #F0A500;
+    --bg: #F7F8FC;
+    --bg-white: #FFFFFF;
+    --text: #1A1D2E;
+    --text-muted: #5A6078;
+    --text-dim: #9298B0;
+    --border: #E2E6F0;
+    --green: #1A8A5A;
+    --green-pale: #E6F7EF;
+    --red: #C0392B;
+    --red-pale: #FDECEA;
+    --shadow: 0 2px 12px rgba(27,79,216,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .logo-area {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot {
+    width: 36px; height: 36px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .logo-name span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-dim);
+  }
+  .progress-wrap {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .prog-bar {
+    width: 120px; height: 5px;
+    background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--blue) 100%);
+    color: white;
+    padding: 56px 24px 48px;
+    text-align: center;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.9);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(30px, 5.5vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: #FFD166;
+  }
+  .hero p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.75);
+    max-width: 460px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-pills {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .sec-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+  .sec-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .sec-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* TÓPICO CARDS */
+  .topic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+  .topic-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .topic-card:hover { border-color: var(--blue-light); box-shadow: 0 4px 20px rgba(27,79,216,0.12); }
+  .topic-card.open { border-color: var(--blue); }
+
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    user-select: none;
+  }
+  .topic-icon {
+    width: 44px; height: 44px;
+    background: var(--blue-pale);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .topic-info { flex: 1; }
+  .topic-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+  .topic-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .topic-chevron {
+    color: var(--text-dim);
+    font-size: 18px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .topic-card.open .topic-chevron { transform: rotate(180deg); }
+
+  .topic-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    border-top: 0px solid var(--border);
+  }
+  .topic-card.open .topic-body {
+    max-height: 900px;
+    border-top-width: 1px;
+  }
+  .topic-body-inner {
+    padding: 20px 20px 24px;
+    display: grid;
+    gap: 20px;
+  }
+
+  /* posture diagram card */
+  .posture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .posture-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .posture-item-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .posture-item-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  .inforow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 520px) { .inforow { grid-template-columns: 1fr; } }
+
+  .info-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .info-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .info-card-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  .check-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 2px;
+  }
+  .check-list li {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+  .check-list li .ck {
+    width: 18px; height: 18px;
+    background: var(--green-pale);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: var(--green);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .check-list li .cx {
+    width: 18px; height: 18px;
+    background: var(--red-pale);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: var(--red);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .alert-info {
+    background: var(--blue-pale);
+    border: 1px solid rgba(27,79,216,0.2);
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--blue);
+    line-height: 1.5;
+  }
+  .alert-warn {
+    background: #FFF8E6;
+    border: 1px solid rgba(240,165,0,0.3);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #7A5200;
+    line-height: 1.5;
+  }
+
+  /* TIMER WIDGET */
+  .timer-widget {
+    background: var(--blue);
+    border-radius: 14px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .timer-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 12px;
+  }
+  .timer-display {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .timer-desc {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-bottom: 16px;
+  }
+  .timer-btns { display: flex; gap: 10px; justify-content: center; }
+  .timer-btn {
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .timer-btn-start { background: white; color: var(--blue); }
+  .timer-btn-start:hover { background: rgba(255,255,255,0.9); }
+  .timer-btn-reset { background: rgba(255,255,255,0.15); color: white; }
+  .timer-btn-reset:hover { background: rgba(255,255,255,0.25); }
+
+  /* EXERCÍCIOS */
+  .exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 56px;
+  }
+  .exercise-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .exercise-icon { font-size: 32px; margin-bottom: 10px; }
+  .exercise-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  .exercise-how {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+  .exercise-time {
+    display: inline-block;
+    margin-top: 10px;
+    background: var(--blue-pale);
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  /* QUIZ */
+  .quiz-wrap {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 48px;
+  }
+  .quiz-top {
+    background: var(--blue);
+    padding: 20px 24px;
+    color: white;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .quiz-top-icon { font-size: 26px; }
+  .quiz-top h3 { font-size: 18px; font-weight: 600; }
+  .quiz-top p { font-size: 13px; opacity: 0.75; }
+  .quiz-inner { padding: 28px 24px; }
+
+  .qprog {
+    display: flex; gap: 6px; margin-bottom: 24px;
+  }
+  .qd {
+    flex: 1; height: 4px;
+    background: var(--border); border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .qd.done { background: var(--green); }
+  .qd.cur { background: var(--blue); }
+
+  .qq { display: none; animation: fadeUp 0.3s ease; }
+  .qq.act { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .qq-num {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 6px;
+  }
+  .qq-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px; line-height: 1.3;
+    margin-bottom: 18px;
+  }
+  .qq-opts { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+  .qq-opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-size: 14px; line-height: 1.4;
+    color: var(--text);
+    text-align: left;
+    transition: border-color 0.2s;
+  }
+  .qq-opt:hover { border-color: var(--blue-light); }
+  .qq-opt.sc { border-color: var(--green); background: var(--green-pale); color: #0D5C36; }
+  .qq-opt.sw { border-color: var(--red); background: var(--red-pale); color: #7A1A10; }
+  .qq-opt.cr { border-color: var(--green); }
+  .opt-ltr {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px;
+    flex-shrink: 0; color: var(--text-muted);
+  }
+  .qq-fb {
+    display: none; padding: 11px 14px;
+    border-radius: 8px; font-size: 13px;
+    line-height: 1.5; margin-bottom: 16px;
+  }
+  .qq-fb.show { display: block; }
+  .qq-fb.ok { background: var(--green-pale); border: 1px solid rgba(26,138,90,0.25); color: #0D5C36; }
+  .qq-fb.er { background: var(--red-pale); border: 1px solid rgba(192,57,43,0.25); color: #7A1A10; }
+
+  .btn-blue {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px;
+    background: var(--blue); color: white;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600; font-size: 15px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-blue:hover { background: var(--indigo); transform: translateY(-1px); }
+  .btn-outline-blue {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px;
+    background: transparent; color: var(--blue);
+    border: 1.5px solid var(--blue); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600; font-size: 15px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline-blue:hover { background: var(--blue-pale); }
+
+  .qresult { display: none; text-align: center; padding: 12px 0; }
+  .qresult.show { display: block; }
+  .qr-emoji { font-size: 52px; margin-bottom: 14px; }
+  .qr-title { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 8px; }
+  .qr-score { font-size: 44px; font-weight: 700; color: var(--blue); margin: 10px 0; }
+  .qr-text { font-size: 14px; color: var(--text-muted); max-width: 380px; margin: 0 auto 22px; line-height: 1.6; }
+
+  /* DECLARATION */
+  .decl {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+  .decl h3 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; margin-bottom: 6px; }
+  .decl > p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  .decl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 520px) { .decl-grid { grid-template-columns: 1fr; } }
+  .f-field { display: flex; flex-direction: column; gap: 5px; }
+  .f-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+  .f-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .f-input:focus { border-color: var(--blue); }
+  .sig-wrap { grid-column: 1 / -1; }
+  .sig-canvas {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    width: 100%; height: 90px;
+    cursor: crosshair; touch-action: none;
+    display: block;
+  }
+  .sig-hint { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+  .legal-note {
+    background: #FFF8E6;
+    border: 1px solid rgba(240,165,0,0.35);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6B4800;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  footer {
+    background: var(--bg-white);
+    border-top: 1px solid var(--border);
+    padding: 20px 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-dot">🏢</div>
+      <div class="logo-name">
+        Bem-estar no trabalho
+        <span>Equipe de escritório</span>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <span id="plabel">0%</span>
+      <div class="prog-bar"><div class="prog-fill" id="pfill"></div></div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-tag">NR17 · Ergonomia · Prevenção</div>
+  <h1>Seu corpo trabalha<br>tanto quanto <em>você.</em></h1>
+  <p>Dor nas costas, tensão no pescoço e cansaço visual não são normais. São sinais de que algo no seu ambiente ou postura precisa mudar.</p>
+  <div class="hero-pills">
+    <div class="pill">⏱ ~20 minutos</div>
+    <div class="pill">📋 Quiz ao final</div>
+    <div class="pill">⏰ Timer de pausa incluído</div>
+    <div class="pill">✍️ Declaração de ciência</div>
+  </div>
+</section>
+
+<main class="main">
+
+  <!-- MÓDULO 1: NR17 e postura -->
+  <div class="sec-label">Módulo 1</div>
+  <div class="sec-title">Sua estação de trabalho certa</div>
+  <p class="sec-sub">A NR17 define padrões mínimos para mobiliário, equipamentos e organização do trabalho de escritório. Veja o que se aplica ao seu dia a dia.</p>
+
+  <div class="topic-list" id="topic-list">
+
+    <div class="topic-card" onclick="toggleTopic(this)">
+      <div class="topic-header">
+        <div class="topic-icon">🪑</div>
+        <div class="topic-info">
+          <div class="topic-title">Cadeira e postura sentada</div>
+          <div class="topic-desc">Como ajustar para não machucar a coluna</div>
+        </div>
+        <div class="topic-chevron">▾</div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-body-inner">
+          <div class="alert-info">📌 A NR17 exige que cadeiras de trabalho tenham assento ajustável em altura, encosto com apoio lombar e apoio para braços quando houver uso intensivo de teclado.</div>
+          <div class="posture-grid">
+            <div class="posture-item">
+              <div class="posture-item-title">🦵 Altura do assento</div>
+              <div class="posture-item-text">Joelhos a 90°, pés apoiados no chão. Se os pés ficarem suspensos, use apoio de pé.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🔙 Apoio lombar</div>
+              <div class="posture-item-text">O encosto deve encostar na região lombar (parte baixa das costas). Ajuste a altura ou use almofada lombar.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">💪 Apoio de braço</div>
+              <div class="posture-item-text">Cotovelos a 90°, ombros relaxados. Braço suspenso = tensão no pescoço e ombro após 1h.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🧍 Coluna</div>
+              <div class="posture-item-text">Evite cruzar as pernas por mais de 20 min. Distribua o peso nos dois ísquios (osso do assento).</div>
+            </div>
+          </div>
+          <div class="inforow">
+            <div class="info-card">
+              <div class="info-card-label">✅ Postura correta</div>
+              <ul class="check-list">
+                <li><span class="ck">✓</span>Costas encostadas no encosto</li>
+                <li><span class="ck">✓</span>Joelhos e quadril a 90°</li>
+                <li><span class="ck">✓</span>Pés no chão ou apoiador</li>
+                <li><span class="ck">✓</span>Ombros relaxados</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <div class="info-card-label">❌ O que evitar</div>
+              <ul class="check-list">
+                <li><span class="cx">✗</span>Sentar na beira da cadeira</li>
+                <li><span class="cx">✗</span>Inclinar para frente por horas</li>
+                <li><span class="cx">✗</span>Cruzar as pernas constantemente</li>
+                <li><span class="cx">✗</span>Apoiar queixo na mão ao digitar</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card" onclick="toggleTopic(this)">
+      <div class="topic-header">
+        <div class="topic-icon">🖥️</div>
+        <div class="topic-info">
+          <div class="topic-title">Monitor e iluminação</div>
+          <div class="topic-desc">Posição do monitor e como a luz afeta sua visão</div>
+        </div>
+        <div class="topic-chevron">▾</div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-body-inner">
+          <div class="posture-grid">
+            <div class="posture-item">
+              <div class="posture-item-title">📏 Distância</div>
+              <div class="posture-item-text">Entre 50–70cm dos olhos. Teste simples: estenda o braço — o monitor deve estar na ponta dos dedos.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">↕️ Altura</div>
+              <div class="posture-item-text">Topo da tela na altura dos olhos ou levemente abaixo. Tela alta = tensão na nuca. Tela baixa = pescoço curvado.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">☀️ Reflexo</div>
+              <div class="posture-item-text">Janela nunca de frente nem atrás do monitor. Posicione-o perpendicularmente à janela para evitar reflexo e ofuscamento.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🔆 Brilho</div>
+              <div class="posture-item-text">Brilho compatível com o ambiente. Ambiente escuro + tela brilhante = cansaço visual. Use a regra 20-20-20.</div>
+            </div>
+          </div>
+          <div class="alert-info">👁️ <strong>Regra 20-20-20:</strong> A cada 20 minutos, olhe para algo a 20 pés (~6 metros) por 20 segundos. Reduz fadiga visual em até 40%.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card" onclick="toggleTopic(this)">
+      <div class="topic-header">
+        <div class="topic-icon">⌨️</div>
+        <div class="topic-info">
+          <div class="topic-title">Teclado, mouse e digitação</div>
+          <div class="topic-desc">LER e DORT — como prevenir</div>
+        </div>
+        <div class="topic-chevron">▾</div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-body-inner">
+          <div class="alert-warn">⚠️ LER (Lesão por Esforço Repetitivo) e DORT (Distúrbio Osteomuscular Relacionado ao Trabalho) são as doenças ocupacionais mais comuns em escritório. São evitáveis.</div>
+          <div class="inforow">
+            <div class="info-card">
+              <div class="info-card-label">Teclado</div>
+              <ul class="check-list">
+                <li><span class="ck">✓</span>Na borda da mesa, cotovelos a 90°</li>
+                <li><span class="ck">✓</span>Punhos retos durante digitação</li>
+                <li><span class="ck">✓</span>Pulso apoiado apenas nas pausas</li>
+                <li><span class="cx">✗</span>Nunca inclinado para cima (punho dobrado)</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <div class="info-card-label">Mouse</div>
+              <ul class="check-list">
+                <li><span class="ck">✓</span>Próximo ao teclado, no mesmo plano</li>
+                <li><span class="ck">✓</span>Mão e pulso relaxados ao segurar</li>
+                <li><span class="ck">✓</span>Clicar com leveza — não forçar</li>
+                <li><span class="cx">✗</span>Nunca estender o braço para alcançar</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Sinais de alerta — procure o responsável de saúde</div>
+            <ul class="check-list">
+              <li><span class="cx">✗</span>Formigamento ou dormência nos dedos ou mãos</li>
+              <li><span class="cx">✗</span>Dor ao digitar que não passa com descanso</li>
+              <li><span class="cx">✗</span>Fraqueza ao segurar objetos</li>
+              <li><span class="cx">✗</span>Dor no pulso, cotovelo ou ombro ao acordar</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card" onclick="toggleTopic(this)">
+      <div class="topic-header">
+        <div class="topic-icon">🧠</div>
+        <div class="topic-info">
+          <div class="topic-title">Pausas e organização do trabalho</div>
+          <div class="topic-desc">O que a NR17 diz e por que isso importa</div>
+        </div>
+        <div class="topic-chevron">▾</div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-body-inner">
+          <div class="alert-info">📌 A NR17 determina que em atividades com exigência intensa de atenção e repetição deve haver pausas regulares. Isso não é mole — é direito legal e necessidade fisiológica.</div>
+          <div class="posture-grid">
+            <div class="posture-item">
+              <div class="posture-item-title">⏸ Pausa ativa</div>
+              <div class="posture-item-text">A cada 50min de trabalho concentrado, 10min de pausa. Levante, mova o corpo, olhe longe.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🚿 Hidratação</div>
+              <div class="posture-item-text">No ambiente seco de escritório (ar-condicionado), beba ao menos 1,5L/dia. Desidratação leve já compromete foco.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🌡️ Temperatura</div>
+              <div class="posture-item-text">NR17: entre 20°C e 23°C para trabalho sedentário em clima quente. Ar-condicionado muito frio causa tensão muscular.</div>
+            </div>
+            <div class="posture-item">
+              <div class="posture-item-title">🔊 Ruído</div>
+              <div class="posture-item-text">Nível de ruído de fundo acima de 65 dB prejudica concentração. Se isso ocorrer, sinalize ao responsável.</div>
+            </div>
+          </div>
+          <!-- TIMER -->
+          <div class="timer-widget">
+            <div class="timer-title">⏱ Timer de pausa ativa</div>
+            <div class="timer-display" id="timer-display">50:00</div>
+            <div class="timer-desc" id="timer-desc">Inicie para ser lembrado de pausar</div>
+            <div class="timer-btns">
+              <button class="timer-btn timer-btn-start" id="timer-btn" onclick="toggleTimer()">▶ Iniciar</button>
+              <button class="timer-btn timer-btn-reset" onclick="resetTimer()">↺ Resetar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card" onclick="toggleTopic(this)">
+      <div class="topic-header">
+        <div class="topic-icon">📱</div>
+        <div class="topic-info">
+          <div class="topic-title">Celular, notebook e home office</div>
+          <div class="topic-desc">Os riscos extras do trabalho moderno</div>
+        </div>
+        <div class="topic-chevron">▾</div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-body-inner">
+          <div class="inforow">
+            <div class="info-card">
+              <div class="info-card-label">Notebook</div>
+              <ul class="check-list">
+                <li><span class="cx">✗</span>Nunca use só o notebook por mais de 2h — teclado e tela juntos forçam uma postura ruim</li>
+                <li><span class="ck">✓</span>Eleve a tela com suporte + use teclado externo</li>
+                <li><span class="ck">✓</span>Mouse externo evita pressão no pulso</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <div class="info-card-label">Celular</div>
+              <ul class="check-list">
+                <li><span class="cx">✗</span>"Text neck": cabeça inclinada para frente = 27kg de pressão na cervical</li>
+                <li><span class="ck">✓</span>Segure o celular na altura dos olhos sempre que possível</li>
+                <li><span class="ck">✓</span>Use fone de ouvido em chamadas longas</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Home office — seus direitos e deveres</div>
+            <div class="info-card-text" style="margin-bottom:8px">A NR17 se aplica ao home office. A empresa pode ser responsabilizada por doenças ocupacionais mesmo quando o trabalho é remoto.</div>
+            <ul class="check-list">
+              <li><span class="ck">✓</span>Comunique condições inadequadas ao RH/gestão</li>
+              <li><span class="ck">✓</span>Mantenha mesa, cadeira e iluminação adequadas</li>
+              <li><span class="ck">✓</span>Separe espaço de trabalho do espaço de descanso</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /topic-list -->
+
+  <!-- EXERCÍCIOS -->
+  <div class="sec-label">Módulo 2</div>
+  <div class="sec-title">Ginástica laboral</div>
+  <p class="sec-sub">5 exercícios que você pode fazer na cadeira, sem equipamento, em qualquer momento.</p>
+
+  <div class="exercise-grid">
+    <div class="exercise-card">
+      <div class="exercise-icon">🔄</div>
+      <div class="exercise-name">Rotação de pescoço</div>
+      <div class="exercise-how">Gire lentamente a cabeça para os lados, depois para frente e para trás. Sem forçar.</div>
+      <div class="exercise-time">30 seg · 3x</div>
+    </div>
+    <div class="exercise-card">
+      <div class="exercise-icon">🙌</div>
+      <div class="exercise-name">Alongamento de punho</div>
+      <div class="exercise-how">Estenda o braço, dobre a mão para cima e segure com a outra. Depois dobrar para baixo.</div>
+      <div class="exercise-time">20 seg cada lado</div>
+    </div>
+    <div class="exercise-card">
+      <div class="exercise-icon">🦋</div>
+      <div class="exercise-name">Abertura de ombros</div>
+      <div class="exercise-how">Entrelace os dedos atrás da cabeça, abra os cotovelos para fora e respire fundo.</div>
+      <div class="exercise-time">30 seg · 2x</div>
+    </div>
+    <div class="exercise-card">
+      <div class="exercise-icon">🦵</div>
+      <div class="exercise-name">Extensão de perna</div>
+      <div class="exercise-how">Sentado, estenda uma perna e segure por 5 segundos. Alterne as pernas.</div>
+      <div class="exercise-time">10 rep cada lado</div>
+    </div>
+    <div class="exercise-card">
+      <div class="exercise-icon">🧘</div>
+      <div class="exercise-name">Respiração diafragmática</div>
+      <div class="exercise-how">Inspire fundo pelo nariz (4s), segure (4s), solte pela boca (6s). Reduz tensão imediata.</div>
+      <div class="exercise-time">5 ciclos</div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-wrap" id="quiz-section">
+    <div class="quiz-top">
+      <div class="quiz-top-icon">🎯</div>
+      <div>
+        <h3>Quiz de fixação</h3>
+        <p>6 perguntas para confirmar que você aprendeu o conteúdo</p>
+      </div>
+    </div>
+    <div class="quiz-inner">
+      <div class="qprog">
+        <div class="qd cur" id="d0"></div>
+        <div class="qd" id="d1"></div>
+        <div class="qd" id="d2"></div>
+        <div class="qd" id="d3"></div>
+        <div class="qd" id="d4"></div>
+        <div class="qd" id="d5"></div>
+      </div>
+
+      <div class="qq act" id="q0">
+        <div class="qq-num">Pergunta 1 de 6</div>
+        <div class="qq-text">Qual é a altura correta do assento da cadeira de trabalho?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,0,0,true)"><span class="opt-ltr">A</span>Joelhos a 90°, pés apoiados no chão ou em apoiador</button>
+          <button class="qq-opt" onclick="ans(this,0,1,false)"><span class="opt-ltr">B</span>Joelhos um pouco acima do quadril para melhor circulação</button>
+          <button class="qq-opt" onclick="ans(this,0,2,false)"><span class="opt-ltr">C</span>A mais alta possível para ter melhor visão do monitor</button>
+        </div>
+        <div class="qq-fb" id="f0"></div>
+        <button class="btn-blue" id="n0" onclick="nx(1)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q1">
+        <div class="qq-num">Pergunta 2 de 6</div>
+        <div class="qq-text">Onde o monitor deve ficar em relação aos olhos?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,1,0,false)"><span class="opt-ltr">A</span>Acima dos olhos, para forçar postura ereta</button>
+          <button class="qq-opt" onclick="ans(this,1,1,true)"><span class="opt-ltr">B</span>Topo da tela na altura dos olhos ou levemente abaixo, a 50–70cm de distância</button>
+          <button class="qq-opt" onclick="ans(this,1,2,false)"><span class="opt-ltr">C</span>Na mesma altura do teclado, sobre a mesa</button>
+        </div>
+        <div class="qq-fb" id="f1"></div>
+        <button class="btn-blue" id="n1" onclick="nx(2)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q2">
+        <div class="qq-num">Pergunta 3 de 6</div>
+        <div class="qq-text">O que é a regra 20-20-20 para saúde visual?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,2,0,false)"><span class="opt-ltr">A</span>Usar óculos 20min por dia para descansar a visão</button>
+          <button class="qq-opt" onclick="ans(this,2,1,false)"><span class="opt-ltr">B</span>Reduzir o brilho da tela 20% a cada 20 horas</button>
+          <button class="qq-opt" onclick="ans(this,2,2,true)"><span class="opt-ltr">C</span>A cada 20 minutos, olhar para algo a 6 metros por 20 segundos</button>
+        </div>
+        <div class="qq-fb" id="f2"></div>
+        <button class="btn-blue" id="n2" onclick="nx(3)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q3">
+        <div class="qq-num">Pergunta 4 de 6</div>
+        <div class="qq-text">Qual sinal indica que você pode estar desenvolvendo LER/DORT?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,3,0,false)"><span class="opt-ltr">A</span>Cansaço no final do dia de trabalho</button>
+          <button class="qq-opt" onclick="ans(this,3,1,true)"><span class="opt-ltr">B</span>Formigamento nos dedos, dor ao digitar que não melhora com descanso</button>
+          <button class="qq-opt" onclick="ans(this,3,2,false)"><span class="opt-ltr">C</span>Dificuldade de concentração após reunião longa</button>
+        </div>
+        <div class="qq-fb" id="f3"></div>
+        <button class="btn-blue" id="n3" onclick="nx(4)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q4">
+        <div class="qq-num">Pergunta 5 de 6</div>
+        <div class="qq-text">A NR17 se aplica a quem trabalha em home office?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,4,0,false)"><span class="opt-ltr">A</span>Não, pois o funcionário é responsável pelo próprio ambiente</button>
+          <button class="qq-opt" onclick="ans(this,4,1,true)"><span class="opt-ltr">B</span>Sim, a empresa pode ser responsabilizada por doenças ocupacionais mesmo em home office</button>
+          <button class="qq-opt" onclick="ans(this,4,2,false)"><span class="opt-ltr">C</span>Só quando o home office durar mais de 6 meses</button>
+        </div>
+        <div class="qq-fb" id="f4"></div>
+        <button class="btn-blue" id="n4" onclick="nx(5)" style="display:none">Próxima →</button>
+      </div>
+
+      <div class="qq" id="q5">
+        <div class="qq-num">Pergunta 6 de 6</div>
+        <div class="qq-text">Qual é a frequência ideal de pausa para trabalho com uso intenso de teclado?</div>
+        <div class="qq-opts">
+          <button class="qq-opt" onclick="ans(this,5,0,false)"><span class="opt-ltr">A</span>Uma pausa de 1 hora no almoço é suficiente</button>
+          <button class="qq-opt" onclick="ans(this,5,1,true)"><span class="opt-ltr">B</span>Pausa de 10 minutos a cada 50 minutos de trabalho concentrado</button>
+          <button class="qq-opt" onclick="ans(this,5,2,false)"><span class="opt-ltr">C</span>A cada 3 horas, com pausa de 5 minutos</button>
+        </div>
+        <div class="qq-fb" id="f5"></div>
+        <button class="btn-blue" id="n5" onclick="showRes()" style="display:none">Ver resultado →</button>
+      </div>
+
+      <div class="qresult" id="qresult">
+        <div class="qr-emoji" id="re">🏆</div>
+        <div class="qr-title" id="rt">Excelente!</div>
+        <div class="qr-score" id="rs">6/6</div>
+        <p class="qr-text" id="rtx">Você demonstrou bom entendimento sobre ergonomia e NR17. Aplique isso no seu dia a dia — sua saúde agradece.</p>
+        <button class="btn-outline-blue" onclick="restartQ()">↺ Refazer quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECLARAÇÃO -->
+  <div class="decl">
+    <h3>Declaração de ciência</h3>
+    <p>Ao preencher e assinar abaixo, você confirma que leu e compreendeu o conteúdo deste treinamento sobre ergonomia e segurança no trabalho de escritório.</p>
+    <div class="legal-note">⚠️ Esta declaração tem validade legal conforme a NR17 e o Art. 157 da CLT. A empresa tem obrigação de fornecer condições adequadas, e o colaborador tem o dever de comunicar situações de risco ou desconforto.</div>
+    <div class="decl-grid">
+      <div class="f-field">
+        <label class="f-label">Nome completo</label>
+        <input type="text" class="f-input" id="dnome" placeholder="Seu nome completo">
+      </div>
+      <div class="f-field">
+        <label class="f-label">Setor / Cargo</label>
+        <input type="text" class="f-input" id="dcargo" placeholder="Ex: Analista administrativo">
+      </div>
+      <div class="f-field">
+        <label class="f-label">Data</label>
+        <input type="date" class="f-input" id="ddata">
+      </div>
+      <div class="f-field">
+        <label class="f-label">Matrícula (opcional)</label>
+        <input type="text" class="f-input" id="dmat" placeholder="Opcional">
+      </div>
+      <div class="f-field sig-wrap">
+        <label class="f-label">Assinatura</label>
+        <canvas class="sig-canvas" id="sigc"></canvas>
+        <div class="sig-hint">Assine com o mouse ou dedo · <a href="#" onclick="clrSig()" style="color:var(--blue)">Limpar</a></div>
+      </div>
+    </div>
+    <button class="btn-blue" onclick="gerarDoc()" style="width:100%;justify-content:center;font-size:16px;padding:14px;">
+      📄 Gerar declaração para impressão
+    </button>
+  </div>
+
+</main>
+
+<footer>
+  Treinamento elaborado com base na NR17 – Ergonomia · Portaria MTE nº 3.751/1990 e atualizações<br>
+  Mantenha este documento acessível à equipe de escritório.
+</footer>
+
+<script>
+// Topics
+let openTopics = new Set();
+function toggleTopic(card) {
+  const wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) {
+    card.classList.add('open');
+    openTopics.add(card.querySelector('.topic-title').textContent);
+  }
+  updateProg();
+}
+
+function updateProg() {
+  const total = 5 + 1;
+  const pct = Math.round((openTopics.size / total) * 100);
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('plabel').textContent = pct + '%';
+}
+
+// Timer
+let timerInterval, timerRunning = false, timerSeconds = 50 * 60;
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval); timerRunning = false;
+    document.getElementById('timer-btn').textContent = '▶ Continuar';
+  } else {
+    timerRunning = true;
+    document.getElementById('timer-btn').textContent = '⏸ Pausar';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval); timerRunning = false;
+        document.getElementById('timer-display').textContent = '00:00';
+        document.getElementById('timer-desc').textContent = '⏰ Hora de pausar! Levante e mova o corpo.';
+        document.getElementById('timer-btn').textContent = '▶ Novo ciclo';
+        timerSeconds = 50 * 60;
+        if (window.Notification && Notification.permission === 'granted') {
+          new Notification('Pausa ativa!', { body: 'Levante, se mova e olhe longe por alguns minutos.' });
+        }
+      } else {
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        document.getElementById('timer-display').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      }
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false; timerSeconds = 50 * 60;
+  document.getElementById('timer-display').textContent = '50:00';
+  document.getElementById('timer-desc').textContent = 'Inicie para ser lembrado de pausar';
+  document.getElementById('timer-btn').textContent = '▶ Iniciar';
+}
+
+// Quiz
+const fbs = [
+  { ok: '✅ Correto! Joelhos a 90° e pés apoiados garante que o peso seja distribuído corretamente e não sobrecarrega a lombar.', er: '❌ Errado. A posição correta é joelhos a 90°, pés apoiados no chão. Use apoiador de pés se necessário.' },
+  { ok: '✅ Correto! O topo da tela na altura dos olhos evita tensão na nuca e pescoço. Distância de 50–70cm é a ideal.', er: '❌ Errado. O monitor deve estar com o topo na altura dos olhos (ou levemente abaixo), a 50–70cm de distância.' },
+  { ok: '✅ Correto! A regra 20-20-20 reduz significativamente a fadiga visual em quem trabalha com tela.', er: '❌ Errado. A regra 20-20-20: a cada 20 minutos, olhe para algo a ~6 metros por 20 segundos.' },
+  { ok: '✅ Correto! Formigamento, dormência e dor persistente são sinais sérios de LER/DORT — não ignore.', er: '❌ Errado. Cansaço normal é esperado. Os sinais de alerta de LER são: formigamento nos dedos, dor ao digitar que não passa, fraqueza ao segurar objetos.' },
+  { ok: '✅ Correto! A NR17 se aplica ao home office e a empresa pode ser responsabilizada por doenças ocupacionais mesmo a distância.', er: '❌ Errado. A NR17 se aplica ao home office. A empresa pode ser responsabilizada independente de onde o trabalho ocorre.' },
+  { ok: '✅ Correto! Pausa de 10 minutos a cada 50 de trabalho é a recomendação da NR17 para trabalho com repetição e atenção intensa.', er: '❌ Errado. A NR17 recomenda pausas de 10 minutos a cada 50 minutos de trabalho intenso — não basta só a pausa do almoço.' }
+];
+let sc2 = 0;
+
+function ans(btn, qi, oi, correct) {
+  const qEl = document.getElementById('q' + qi);
+  qEl.querySelectorAll('.qq-opt').forEach(o => o.disabled = true);
+  const fb = document.getElementById('f' + qi);
+  const nb = document.getElementById('n' + qi);
+  if (correct) {
+    btn.classList.add('sc');
+    fb.textContent = fbs[qi].ok;
+    fb.className = 'qq-fb show ok';
+    sc2++;
+  } else {
+    btn.classList.add('sw');
+    fb.textContent = fbs[qi].er;
+    fb.className = 'qq-fb show er';
+    qEl.querySelectorAll('.qq-opt').forEach(o => {
+      if (o.onclick.toString().includes('true')) o.classList.add('cr');
+    });
+  }
+  document.getElementById('d' + qi).classList.remove('cur');
+  document.getElementById('d' + qi).classList.add('done');
+  if (qi + 1 < 6) document.getElementById('d' + (qi + 1)).classList.add('cur');
+  nb.style.display = 'inline-flex';
+  openTopics.add('quiz'); updateProg();
+}
+
+function nx(n) {
+  document.getElementById('q' + (n - 1)).classList.remove('act');
+  document.getElementById('q' + n).classList.add('act');
+}
+
+function showRes() {
+  document.getElementById('q5').classList.remove('act');
+  const r = document.getElementById('qresult');
+  r.classList.add('show');
+  const emoji = sc2 >= 5 ? '🏆' : sc2 >= 3 ? '👍' : '📚';
+  const title = sc2 >= 5 ? 'Excelente!' : sc2 >= 3 ? 'Bom trabalho!' : 'Continue estudando';
+  const text = sc2 >= 5
+    ? 'Você demonstrou bom entendimento sobre ergonomia e NR17. Aplique no dia a dia — sua saúde agradece a longo prazo.'
+    : sc2 >= 3
+    ? 'Bom resultado! Revise os itens que errou relendo o módulo correspondente antes de assinar.'
+    : 'Revise o material com atenção. Ergonomia afeta sua saúde a longo prazo e vale o tempo de estudo.';
+  document.getElementById('re').textContent = emoji;
+  document.getElementById('rt').textContent = title;
+  document.getElementById('rs').textContent = sc2 + '/6';
+  document.getElementById('rtx').textContent = text;
+}
+
+function restartQ() {
+  sc2 = 0;
+  document.getElementById('qresult').classList.remove('show');
+  document.querySelectorAll('.qq').forEach((q, i) => {
+    q.classList.remove('act');
+    q.querySelectorAll('.qq-opt').forEach(o => {
+      o.disabled = false;
+      o.classList.remove('sc', 'sw', 'cr');
+    });
+    const fb = document.getElementById('f' + i);
+    if (fb) fb.className = 'qq-fb';
+    const nb = document.getElementById('n' + i);
+    if (nb) nb.style.display = 'none';
+    document.getElementById('d' + i).className = 'qd';
+  });
+  document.getElementById('q0').classList.add('act');
+  document.getElementById('d0').classList.add('cur');
+}
+
+// Signature
+const c2 = document.getElementById('sigc');
+const cx2 = c2.getContext('2d');
+c2.width = c2.offsetWidth; c2.height = c2.offsetHeight;
+cx2.strokeStyle = '#1A1D2E'; cx2.lineWidth = 2; cx2.lineCap = 'round';
+let drawing2 = false;
+c2.addEventListener('mousedown', e => { drawing2 = true; cx2.beginPath(); cx2.moveTo(e.offsetX, e.offsetY); });
+c2.addEventListener('mousemove', e => { if (!drawing2) return; cx2.lineTo(e.offsetX, e.offsetY); cx2.stroke(); });
+c2.addEventListener('mouseup', () => drawing2 = false);
+c2.addEventListener('mouseleave', () => drawing2 = false);
+c2.addEventListener('touchstart', e => { e.preventDefault(); drawing2 = true; const r = c2.getBoundingClientRect(); cx2.beginPath(); cx2.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); }, { passive: false });
+c2.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing2) return; const r = c2.getBoundingClientRect(); cx2.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); cx2.stroke(); }, { passive: false });
+c2.addEventListener('touchend', () => drawing2 = false);
+function clrSig() { cx2.clearRect(0, 0, c2.width, c2.height); }
+
+document.getElementById('ddata').value = new Date().toISOString().split('T')[0];
+
+function gerarDoc() {
+  const nome = document.getElementById('dnome').value.trim();
+  const cargo = document.getElementById('dcargo').value.trim();
+  const data = document.getElementById('ddata').value;
+  const mat = document.getElementById('dmat').value.trim();
+  const sigData = c2.toDataURL();
+  if (!nome || !cargo) { alert('Preencha nome e setor/cargo antes de gerar.'); return; }
+  const dataFmt = data ? new Date(data + 'T12:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Declaração – Ergonomia Escritório</title>
+  <style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:24px;color:#1a1a1a;font-size:14px;line-height:1.7}h1{font-size:20px;text-align:center;margin-bottom:4px}.sub{text-align:center;font-size:13px;color:#666;margin-bottom:32px}table{width:100%;border-collapse:collapse;margin:20px 0}td{padding:8px 12px;border:1px solid #ccc}td:first-child{font-weight:bold;width:30%;background:#f5f5f5}.ul{padding-left:18px}.ul li{margin-bottom:6px}.sig-area{margin-top:32px;border-top:1px solid #ccc;padding-top:20px}.legal{background:#fff8e6;border:1px solid #e0a000;border-radius:6px;padding:12px 16px;margin:20px 0;font-size:13px}@media print{body{margin:20px}}</style></head><body>
+  <h1>Declaração de Ciência – Treinamento de Ergonomia</h1>
+  <p class="sub">Equipe de Escritório · NR17</p>
+  <table>
+    <tr><td>Nome</td><td>${nome}</td></tr>
+    <tr><td>Setor / Cargo</td><td>${cargo}</td></tr>
+    ${mat ? `<tr><td>Matrícula</td><td>${mat}</td></tr>` : ''}
+    <tr><td>Data</td><td>${dataFmt}</td></tr>
+  </table>
+  <p>Eu, <strong>${nome}</strong>, declaro que participei e compreendi o treinamento de Ergonomia e Qualidade de Vida no Trabalho (NR17), tendo sido orientado sobre:</p>
+  <ul class="ul">
+    <li>Postura correta e ajuste de cadeira, mesa e monitor</li>
+    <li>Prevenção de LER/DORT no uso de teclado e mouse</li>
+    <li>Pausas ativas obrigatórias durante a jornada</li>
+    <li>Saúde visual e regra 20-20-20</li>
+    <li>Ergonomia em home office</li>
+    <li>Ginástica laboral e exercícios preventivos</li>
+  </ul>
+  <p>Comprometo-me a aplicar as orientações recebidas, a comunicar ao responsável qualquer situação de desconforto ou risco ergonômico, e a utilizar as pausas previstas pela NR17 durante minha jornada.</p>
+  <div class="legal">⚠️ <strong>Fundamentação legal:</strong> NR17 – Ergonomia (Portaria MTE nº 3.751/1990) e Art. 157 da CLT. A empresa é obrigada a fornecer condições adequadas e o colaborador tem o dever de comunicar situações de risco.</div>
+  <div class="sig-area">
+    <p><strong>Assinatura do colaborador:</strong></p>
+    <img src="${sigData}" style="border:1px solid #ccc;border-radius:6px;padding:6px" width="300" height="90"><br><br>
+    <p>Local e data: _________________________, ${dataFmt}</p>
+    <br><p>Responsável / Empresa: _________________________</p>
+  </div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  win.document.close();
+}
+</script>
+</body>
+</html>

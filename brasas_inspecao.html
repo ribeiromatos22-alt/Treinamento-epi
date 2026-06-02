@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BRASAS — Vistoria</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap');
+:root{--red:#c8001a;--orange:#f07d00;--green:#17a865;--blue:#1a6ef5;--purple:#6d28d9;--bg:#edeae4;--surface:#fff;--surface2:#f5f2ee;--border:#dbd6ce;--border2:#bfb8ae;--text:#18140f;--text2:#6b6155;--text3:#a09080;--r:10px;--rs:6px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px;}
+.hdr{background:var(--red);padding:12px 16px;position:sticky;top:0;z-index:200;}
+.hdr-inner{display:flex;align-items:center;gap:10px;}
+.logo{background:rgba(255,255,255,.18);border-radius:7px;padding:5px 9px;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:#fff;letter-spacing:1px;}
+.hdr-text h1{color:#fff;font-size:14px;font-weight:700;line-height:1.2;}
+.hdr-text p{color:rgba(255,255,255,.65);font-size:11px;}
+.prog-strip{height:3px;background:rgba(0,0,0,.25);}
+.prog-fill{height:100%;background:var(--orange);transition:width .4s;}
+.dots{display:flex;gap:4px;padding:10px 16px 6px;}
+.dot{flex-shrink:0;height:3px;border-radius:2px;background:var(--border);transition:all .3s;}
+.dot.done{background:var(--green);}.dot.now{background:var(--red);}
+.screen{display:none;padding:14px 14px 20px;}.screen.on{display:block;}
+.pg-title{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:2px;}
+.pg-sub{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.card-ttl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.f{margin-bottom:9px;}
+.f label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;}
+.f input,.f select,.f textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:9px 11px;outline:none;}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--red);}
+.f textarea{resize:vertical;min-height:64px;font-size:14px;}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+/* TIPO CLIENTE */
+.tipo-card{display:flex;align-items:center;gap:12px;padding:13px;border:2px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--surface2);margin-bottom:8px;transition:all .2s;}
+.tipo-card.sel{border-color:var(--red);background:rgba(200,0,26,.04);}
+.tipo-icon{font-size:26px;flex-shrink:0;}
+.tipo-info{flex:1;}
+.tipo-nome{font-size:14px;font-weight:700;margin-bottom:2px;}
+.tipo-desc{font-size:11px;color:var(--text2);line-height:1.4;}
+.tipo-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s;}
+.tipo-card.sel .tipo-check{background:var(--red);border-color:var(--red);}
+.tipo-card.sel .tipo-check::after{content:'✓';display:block;text-align:center;color:#fff;font-size:13px;line-height:20px;}
+/* ESTRUTURA */
+.est-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;}
+.est-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.andar-list{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;min-height:24px;}
+.andar-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;}
+.andar-chip button{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0;line-height:1;}
+.ainp-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;margin-top:6px;}
+.ainp-row{display:flex;gap:6px;margin-bottom:6px;}
+.ainp-row input{flex:1;background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:9px 11px;outline:none;}
+.ainp-row input:focus{border-color:var(--red);}
+.seq-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin:8px 0 6px;display:block;}
+.seq-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;}
+.seq-row input{background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:8px;outline:none;width:100%;}
+/* BUTTONS */
+.btn{width:100%;padding:14px;border-radius:var(--r);border:none;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all .2s;margin-top:7px;letter-spacing:.5px;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-out{background:transparent;border:2px solid var(--border2);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px;}
+.btn-grn{background:var(--green);color:#fff;}
+.btn-pur{background:var(--purple);color:#fff;}
+.abtn{padding:9px 14px;border-radius:var(--rs);border:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.abtn-add{background:var(--red);color:#fff;}
+.abtn-seq{background:var(--purple);color:#fff;width:100%;padding:10px;margin-top:7px;border-radius:var(--rs);border:none;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+/* NIVEL SWITCHER */
+.lvl-sw{display:flex;margin-bottom:12px;border-radius:var(--r);overflow:hidden;border:2px solid var(--border2);}
+.lv{flex:1;padding:11px 6px;border:none;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;background:var(--surface2);color:var(--text2);}
+.lv.on-t{background:var(--purple);color:#fff;}
+.lv.on-a{background:var(--blue);color:#fff;}
+/* TABS */
+.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px;}
+.tabs::-webkit-scrollbar{display:none;}
+.ttab,.atau{flex-shrink:0;padding:6px 13px;border-radius:20px;border:2px solid;font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.ttab{border-color:var(--purple);color:var(--purple);background:transparent;}
+.ttab.on{background:var(--purple);color:#fff;}
+.atau{border-color:var(--blue);color:var(--blue);background:transparent;}
+.atau.on{background:var(--blue);color:#fff;}
+.t-g,.a-g{border-color:var(--green)!important;color:var(--green)!important;}
+.t-p,.a-p{border-color:var(--orange)!important;color:var(--orange)!important;}
+.t-r,.a-r{border-color:var(--red)!important;color:var(--red)!important;}
+/* PROGRESS */
+.aprog{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);}
+.aprog-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.aprog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+.aprog span{font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap;font-family:'DM Mono',monospace;}
+/* NIVEL BADGE */
+.nvl-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px;}
+.nb-t{background:rgba(109,40,217,.1);color:var(--purple);}
+.nb-a{background:rgba(26,110,245,.1);color:var(--blue);}
+/* MOD CARD */
+.mc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;}
+.mc.ok{border-left:4px solid var(--green);}
+.mc.pe{border-left:4px solid var(--orange);}
+.mc.re{border-left:4px solid var(--red);}
+.mc-head{padding:12px 13px;display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;}
+.mc-head .num{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--text3);min-width:20px;}
+.mc-head .ico{font-size:20px;flex-shrink:0;}
+.mc-head .ttl{flex:1;font-size:14px;font-weight:700;}
+.mc-head .caret{font-size:16px;color:var(--text3);transition:transform .2s;}
+.mc.open .caret{transform:rotate(180deg);}
+.mc-body{display:none;padding:0 13px 13px;border-top:1px solid var(--border);}
+.mc.open .mc-body{display:block;}
+/* STATUS ROW */
+.st-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin:10px 0 12px;}
+.stb{padding:10px 2px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface2);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;cursor:pointer;text-align:center;color:var(--text2);}
+.stb.s-ok{background:rgba(23,168,101,.12);border-color:var(--green);color:var(--green);}
+.stb.s-pe{background:rgba(240,125,0,.12);border-color:var(--orange);color:var(--orange);}
+.stb.s-re{background:rgba(200,0,26,.12);border-color:var(--red);color:var(--red);}
+.stb.s-np{background:rgba(107,97,85,.12);border-color:var(--text2);color:var(--text2);}
+/* BADGE */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;flex-shrink:0;}
+.bdg-ok{background:rgba(23,168,101,.12);color:var(--green);}
+.bdg-pe{background:rgba(240,125,0,.12);color:var(--orange);}
+.bdg-re{background:rgba(200,0,26,.12);color:var(--red);}
+.bdg-np{background:rgba(107,97,85,.1);color:var(--text2);}
+/* SUBSEC */
+.subsec{border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;overflow:hidden;}
+.subsec-head{padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);user-select:none;}
+.subsec-head .s-ttl{flex:1;font-size:13px;font-weight:700;}
+.subsec-head .s-car{font-size:14px;color:var(--text3);transition:transform .2s;}
+.subsec.open .s-car{transform:rotate(180deg);}
+.subsec-body{display:none;padding:10px 12px 12px;}
+.subsec.open .subsec-body{display:block;}
+.subsec.ok-s{border-color:rgba(23,168,101,.4);}
+.subsec.pe-s{border-color:rgba(240,125,0,.5);}
+.subsec.re-s{border-color:rgba(200,0,26,.5);}
+/* DIAG / PEND */
+.diag-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:8px;padding:5px 0;border-bottom:1.5px solid var(--border);}
+.pend-sec{display:none;margin-top:10px;border:1.5px solid var(--orange);border-radius:var(--rs);padding:10px;}
+.pend-sec.vis{display:block;}
+.pend-sec.rep{border-color:var(--red);}
+.pend-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--orange);margin-bottom:8px;}
+.pend-sec.rep .pend-lbl{color:var(--red);}
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text2);padding:5px;border-bottom:1.5px solid var(--border);text-align:left;}
+.tbl td{padding:4px 4px;border-bottom:1px solid var(--border);font-size:12px;}
+.tbl tbody tr:last-child td{border-bottom:none;}
+.tbl input{width:100%;border:none;background:var(--surface2);border-radius:3px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);padding:4px 5px;outline:none;text-align:center;}
+.tbl-wrap{overflow-x:auto;}
+.btn-sav{width:100%;padding:10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface2);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);margin-top:10px;}
+/* SUMMARY */
+.sum-sec{margin-bottom:12px;}
+.sum-sec-ttl{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--border);}
+.sum-item{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.sum-item:last-child{border-bottom:none;}
+.sum-item strong{display:block;font-weight:700;margin-bottom:1px;}
+.sum-item span{color:var(--text2);font-size:11px;}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.ibox{background:var(--surface2);border-radius:var(--rs);padding:9px 11px;}
+.ibox .lbl{font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+.ibox .val{font-size:13px;font-weight:700;}
+.nav-bot{display:flex;gap:8px;margin-top:14px;}
+.nav-bot .btn{margin-top:0;flex:1;padding:13px;}
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;font-size:12px;font-weight:600;padding:7px 16px;border-radius:20px;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="logo">BRASAS</div>
+    <div class="hdr-text">
+      <h1>Relatório de Inspeção</h1>
+      <p id="hSub">Extintores e Equipamentos de Prevenção</p>
+    </div>
+  </div>
+</div>
+<div class="prog-strip"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+<div class="dots" id="dots"></div>
+<div class="toast" id="toast">✓ Salvo automaticamente</div>
+
+<!-- SC0: DADOS -->
+<div class="screen on" id="sc0">
+  <div class="pg-title">Nova Vistoria</div>
+  <div class="pg-sub">Dados gerais · salvo automaticamente</div>
+  <div class="card">
+    <div class="card-ttl">Identificação</div>
+    <div class="r2">
+      <div class="f"><label>O.S. / Código</label><input id="fCod" type="text" placeholder="Ex: 15764" oninput="autoSave()"></div>
+      <div class="f"><label>Data</label><input id="fData" type="date" oninput="autoSave()"></div>
+    </div>
+    <div class="f"><label>Cliente</label><input id="fCliente" type="text" placeholder="Ex: Residencial Porto Fino" oninput="autoSave()"></div>
+    <div class="f"><label>CNPJ (opcional)</label><input id="fCnpj" type="text" placeholder="00.000.000/0001-00" oninput="autoSave()"></div>
+    <div class="f"><label>Técnico(s)</label><input id="fTec" type="text" placeholder="Ex: Max / Iury / Ediandro" oninput="autoSave()"></div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">Tipo de Cliente</div>
+    <div id="tipoCards">
+      <div class="tipo-card" id="tc-condominio" onclick="setTipo('condominio')">
+        <div class="tipo-icon">🏢</div>
+        <div class="tipo-info">
+          <div class="tipo-nome">Condomínio</div>
+          <div class="tipo-desc">Torres + Andares · 12 sistemas (inclui Gás e Escada Pressurizada)</div>
+        </div>
+        <div class="tipo-check" id="ck-condominio"></div>
+      </div>
+      <div class="tipo-card" id="tc-empresa" onclick="setTipo('empresa')">
+        <div class="tipo-icon">🏬</div>
+        <div class="tipo-info">
+          <div class="tipo-nome">Empresa / Escritório</div>
+          <div class="tipo-desc">Pavimentos · 10 sistemas (sem Gás e Escada Pressurizada)</div>
+        </div>
+        <div class="tipo-check" id="ck-empresa"></div>
+      </div>
+      <div class="tipo-card" id="tc-galpao" onclick="setTipo('galpao')">
+        <div class="tipo-icon">🏭</div>
+        <div class="tipo-info">
+          <div class="tipo-nome">Galpão / Centro Logístico</div>
+          <div class="tipo-desc">Setores no mesmo nível · 10 sistemas (sem Gás e Escada Pressurizada)</div>
+        </div>
+        <div class="tipo-check" id="ck-galpao"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="cardEst" style="display:none">
+    <div class="card-ttl" id="estTtl">Estrutura</div>
+    <p id="estDesc" style="font-size:12px;color:var(--text2);margin-bottom:12px"></p>
+    <div id="estList"></div>
+    <button class="btn btn-pur" id="btnAddBloco" style="padding:11px;font-size:14px;margin-top:4px" onclick="addBloco()"></button>
+  </div>
+  <button class="btn btn-red" onclick="iniciar()">Iniciar Vistoria →</button>
+  <button class="btn btn-out" onclick="retomar()" style="margin-top:6px">↩ Retomar vistoria salva</button>
+</div>
+
+<!-- SC1: VISTORIA -->
+<div class="screen" id="sc1">
+  <div id="wrapLvl" style="display:none">
+    <div class="lvl-sw">
+      <button class="lv on-t" id="btnT" onclick="setNivel('torre')">🏢 TORRES</button>
+      <button class="lv" id="btnA" onclick="setNivel('andar')">🏬 ANDARES</button>
+    </div>
+  </div>
+  <div class="tabs" id="tTabs"></div>
+  <div class="tabs" id="aTabs" style="display:none"></div>
+  <div class="aprog" id="aprog" style="display:none">
+    <div class="aprog-bar"><div class="aprog-fill" id="aprogFill" style="width:0%"></div></div>
+    <span id="aprogTxt">0/6 módulos</span>
+  </div>
+  <div id="modsWrap"></div>
+  <div class="nav-bot">
+    <button class="btn btn-out" onclick="irResumo()">Ver Resumo →</button>
+  </div>
+</div>
+
+<!-- SC2: RESUMO -->
+<div class="screen" id="sc2">
+  <div class="pg-title">Resumo da Vistoria</div>
+  <div class="pg-sub" id="sumSub">—</div>
+  <div class="igrid">
+    <div class="ibox"><div class="lbl">O.S.</div><div class="val" id="sC">—</div></div>
+    <div class="ibox"><div class="lbl">Data</div><div class="val" id="sD">—</div></div>
+    <div class="ibox" style="grid-column:span 2"><div class="lbl">Cliente</div><div class="val" id="sCl">—</div></div>
+    <div class="ibox" style="grid-column:span 2"><div class="lbl">Técnico(s)</div><div class="val" id="sTe">—</div></div>
+  </div>
+  <div id="sumContent"></div>
+  <button id="btnEnv" class="btn btn-grn" onclick="enviar()" style="margin-top:4px;font-size:17px;padding:16px">📤 Enviar para Planilha da Empresa</button>
+  <p style="font-size:11px;color:var(--text2);text-align:center;margin-top:5px">Dados vão direto para o Google Sheets da BRASAS</p>
+  <button class="btn btn-out" onclick="exportar()" style="margin-top:10px">📊 Exportar Excel (cópia local)</button>
+  <button class="btn btn-out" onclick="voltarVistoria()" style="margin-top:7px">← Voltar</button>
+  <button class="btn btn-out" onclick="novaVistoria()" style="margin-top:7px">+ Nova Vistoria</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbycI2QkYszuey37GQN_2MOqE3y55CPhPIqq8QW8W6-xoLjsWnFLA1uhZjG9HjpcIjh0/exec';
+
+const MODS_COND_TORRE = [
+  {id:'para_raio', num:'03', icon:'⚡', nome:'Para-Raio'},
+  {id:'alarme',    num:'04', icon:'🔔', nome:'Central de Alarme'},
+  {id:'bomba',     num:'08', icon:'💧', nome:'Bomba de Incêndio'},
+  {id:'sprinkler', num:'09', icon:'🌊', nome:'Rede Sprinkler'},
+  {id:'gas',       num:'10', icon:'🔥', nome:'Central de Gás'},
+  {id:'escada',    num:'12', icon:'🏃', nome:'Escada Pressurizada'},
+];
+const MODS_COND_ANDAR = [
+  {id:'sinalizacao',num:'01', icon:'🪧', nome:'Sinalizações Fotoluminescentes'},
+  {id:'iluminacao', num:'02', icon:'💡', nome:'Iluminação de Emergência'},
+  {id:'botoeiras',  num:'05', icon:'🆘', nome:'Botoeiras'},
+  {id:'detector',   num:'06', icon:'🌫️', nome:'Detector de Fumaça'},
+  {id:'shp',        num:'07', icon:'🚒', nome:'SHP — Sistema de Hidrantes'},
+  {id:'pcf',        num:'11', icon:'🚪', nome:'Portas Corta-Fogo'},
+];
+const MODS_UNICO = [
+  {id:'para_raio',  num:'01', icon:'⚡', nome:'Para-Raio'},
+  {id:'alarme',     num:'02', icon:'🔔', nome:'Central de Alarme'},
+  {id:'bomba',      num:'03', icon:'💧', nome:'Bomba de Incêndio'},
+  {id:'sprinkler',  num:'04', icon:'🌊', nome:'Rede Sprinkler'},
+  {id:'sinalizacao',num:'05', icon:'🪧', nome:'Sinalizações Fotoluminescentes'},
+  {id:'iluminacao', num:'06', icon:'💡', nome:'Iluminação de Emergência'},
+  {id:'botoeiras',  num:'07', icon:'🆘', nome:'Botoeiras'},
+  {id:'detector',   num:'08', icon:'🌫️', nome:'Detector de Fumaça'},
+  {id:'shp',        num:'09', icon:'🚒', nome:'SHP — Sistema de Hidrantes'},
+  {id:'pcf',        num:'10', icon:'🚪', nome:'Portas Corta-Fogo'},
+];
+
+const TIPOS = {
+  condominio:{label:'Condomínio',icon:'🏢',blocoNome:'Torre',blocoPlural:'Torres',temAndares:true,modsBloco:MODS_COND_TORRE,modsAndar:MODS_COND_ANDAR,phBloco:'Ex: Torre 1, Bloco A...',phAndar:'Ex: Térreo, 1° Andar...',descEst:'<strong>Por torre:</strong> Para-raio, Alarme, Bomba, Sprinkler, Gás, Escada &nbsp;·&nbsp; <strong>Por andar:</strong> Sinalizações, Iluminação, Botoeiras, Detector, SHP, PCF'},
+  empresa:   {label:'Empresa / Escritório',icon:'🏬',blocoNome:'Pavimento',blocoPlural:'Pavimentos',temAndares:false,modsBloco:MODS_UNICO,modsAndar:[],phBloco:'Ex: Térreo, 1° Andar...',phAndar:'',descEst:'Adicione cada pavimento. Todos os 10 sistemas são avaliados por pavimento.'},
+  galpao:    {label:'Galpão / Centro Logístico',icon:'🏭',blocoNome:'Setor',blocoPlural:'Setores',temAndares:false,modsBloco:MODS_UNICO,modsAndar:[],phBloco:'Ex: Galpão 1, Setor A...',phAndar:'',descEst:'Adicione cada setor ou bloco. Todos os 10 sistemas são avaliados por setor.'},
+};
+
+const SIN_ROTA=['SAÍDA','ESC. DESCE DIREITA','ESC. DESCE ESQ.','SAÍDA SETA P/ DIR.','SAÍDA SETA P/ ESQ.','ESC.SOBE DIREITA','ESC.SOBE ESQUER.','ANDARES','NAO USE ELEVADOR','NÃO FUME','BARRILETE','TERREO','COBERTURA','TELHADO'];
+const SIN_EXT =['AP','PQS 2KG','PQS 4KG','PQS 6KG','PQS 8KG','PQS 12KG','PQS ABC 4KG','PQS ABC 6KG','CO2 6K','CO2 4K','PO QUIMICO BC','PQS ABC'];
+const SIN_OUT =['PROIBIDO FUMAR','INFLAMAVEL','RISCO CHOQ.ELETRICO','TRIPE AP/CO2/P8/P12','TRIPE PQS 4KG/6KG','SUPORTE PAREDE','ADESIVO INCENDIO','FITA ANTIDERRAPANTE','ADESIVO GÁS','MANGUEIRAS'];
+const SIN_GER =['PCF','ALARME SONORO','ALARME INCENDIO','HIDRANTE','CENTRAL DE GAS','CASA DE MAQUINA','CASA DE BOMBA','CO2'];
+const PR_CAPT =['Kit Saty','Captor Franklin','Mastro 1½"','Mastro 2"','Base mastro','Suporte sinaleiro','Sinaleiro completo','Isolador 1½"','Isolador 2"','Curva 90° alumínio'];
+const PR_COND =['Mts cabo cobre 35mm','Mts cabo cobre 50mm','Cabo cordoalha (mts)','Mts fita alumínio','Eletroduto','Conector de canto','Conector KS','Conector emenda','Esticador','Clipe','Presilha latão','Grampo terra duplo'];
+const PR_CX   =['Botinha/Sapatinho','Tampa aterramento','Haste aterramento','Parafuso bucha alumínio','Parafuso autobrocante','Parafuso c/ porca e arruela','Isolador de canto','PU p/ vedação'];
+const PR_AT   =['Grampo de aterramento','Cabo cobre 50mm (malha)','Haste cobre','Conector KS 50mm','DPS (Dispositivo de Proteção)'];
+
+// ═══════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════
+let tipoCliente = null;
+let estrutura   = [];
+let dataTorre   = [];
+let dataAndar   = [];
+let tIdx = 0, aIdx = 0, nivel = 'torre';
+let saveTimer = null;
+
+// ═══════════════════════════════════════════════
+// TIPO DE CLIENTE
+// ═══════════════════════════════════════════════
+function setTipo(tipo) {
+  tipoCliente = tipo;
+  ['condominio','empresa','galpao'].forEach(t => {
+    document.getElementById('tc-'+t).classList.toggle('sel', t===tipo);
+  });
+  const cfg = TIPOS[tipo];
+  document.getElementById('cardEst').style.display = 'block';
+  document.getElementById('estTtl').textContent = cfg.icon+' Estrutura — '+cfg.blocoPlural;
+  document.getElementById('estDesc').innerHTML = cfg.descEst;
+  document.getElementById('btnAddBloco').textContent = '+ Adicionar '+cfg.blocoNome;
+  estrutura = [];
+  renderEst();
+  autoSave();
+}
+
+// ═══════════════════════════════════════════════
+// ESTRUTURA
+// ═══════════════════════════════════════════════
+function addBloco() {
+  const cfg = TIPOS[tipoCliente];
+  // Para galpão/empresa: nome em branco para o técnico preencher
+  const nome = cfg.temAndares ? cfg.blocoNome+' '+(estrutura.length+1) : '';
+  estrutura.push({nome, andares: []});
+  renderEst();
+  autoSave();
+  setTimeout(() => {
+    const el=document.getElementById('est-'+(estrutura.length-1));
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+    // Focar no campo de nome para galpão/empresa
+    const inp=document.getElementById('bnome-'+(estrutura.length-1));
+    if(inp) inp.focus();
+  }, 100);
+}
+
+function rmBloco(ti) {
+  if(!confirm('Remover '+estrutura[ti].nome+'?')) return;
+  estrutura.splice(ti,1);
+  renderEst();
+  autoSave();
+}
+
+function rmAndar(ti, ai) {
+  estrutura[ti].andares.splice(ai,1);
+  renderEst();
+  autoSave();
+}
+
+function addAndarUm(ti) {
+  const inp = document.getElementById('ainp-'+ti);
+  const v = inp.value.trim();
+  if(!v) return;
+  estrutura[ti].andares.push(v);
+  inp.value = '';
+  renderEst();
+  autoSave();
+  setTimeout(() => { const el=document.getElementById('ainp-'+ti); if(el) el.focus(); }, 50);
+}
+
+function addAndarSeq(ti) {
+  const pfx = document.getElementById('spfx-'+ti).value.trim();
+  const de  = parseInt(document.getElementById('sde-'+ti).value);
+  const ate = parseInt(document.getElementById('sate-'+ti).value);
+  if(isNaN(de)||isNaN(ate)||ate<de||ate-de>99) { alert('Verifique os valores.'); return; }
+  for(let i=de; i<=ate; i++) estrutura[ti].andares.push(pfx ? pfx+' '+i : ''+i);
+  renderEst();
+  autoSave();
+}
+
+function renderEst() {
+  if(!tipoCliente) return;
+  const cfg = TIPOS[tipoCliente];
+  let html = '';
+  estrutura.forEach((t,ti) => {
+    const ph = cfg.temAndares ? cfg.blocoNome+' '+(ti+1) : 'Ex: Galpão A, Setor Expedição, Bloco 2...';
+    html += '<div class="est-card" id="est-'+ti+'">';
+    html += '<div class="est-head">';
+    html += '<input type="text" id="bnome-'+ti+'" value="'+t.nome+'" placeholder="'+ph+'" oninput="estrutura['+ti+'].nome=this.value;autoSave()" style="flex:1;border:none;background:transparent;font-family:\'Barlow\',sans-serif;font-size:15px;font-weight:700;color:var(--text);outline:none;border-bottom:1.5px solid var(--border);padding:2px 0;min-width:0">';
+    html += '<button onclick="rmBloco('+ti+')" style="background:none;border:none;color:var(--red);font-size:22px;cursor:pointer;padding:0 4px;flex-shrink:0">×</button>';
+    html += '</div>';
+    if(cfg.temAndares) {
+      html += '<div class="andar-list">';
+      if(t.andares.length===0) html += '<span style="font-size:12px;color:var(--text3)">Nenhum andar adicionado</span>';
+      t.andares.forEach((a,ai) => {
+        html += '<div class="andar-chip">'+a+'<button onclick="rmAndar('+ti+','+ai+')">×</button></div>';
+      });
+      html += '</div>';
+      html += '<div class="ainp-box">';
+      html += '<div class="ainp-row"><input type="text" id="ainp-'+ti+'" placeholder="'+cfg.phAndar+'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addAndarUm('+ti+');}"><button class="abtn abtn-add" onclick="addAndarUm('+ti+')">+ Andar</button></div>';
+      html += '<span class="seq-lbl">Ou adicionar em sequência</span>';
+      html += '<div class="seq-row"><input type="text" id="spfx-'+ti+'" placeholder="Prefixo (ex: Andar)"><input type="number" id="sde-'+ti+'" value="1" min="1" placeholder="De"><input type="number" id="sate-'+ti+'" value="10" min="1" placeholder="Até"></div>';
+      html += '<button class="abtn-seq" onclick="addAndarSeq('+ti+')">Adicionar sequência</button>';
+      html += '</div>';
+    } else {
+      html += '<p style="font-size:12px;color:var(--text2);margin-top:6px">Todos os sistemas serão avaliados neste '+cfg.blocoNome.toLowerCase()+'. Digite o nome acima.</p>';
+    }
+    html += '</div>';
+  });
+  document.getElementById('estList').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// INICIAR
+// ═══════════════════════════════════════════════
+function iniciar() {
+  if(!tipoCliente) { alert('Selecione o tipo de cliente.'); return; }
+  if(!gv('fCod').trim()) { alert('Informe o número da O.S.'); return; }
+  if(!estrutura.length) { alert('Adicione pelo menos um bloco.'); return; }
+  const cfg = TIPOS[tipoCliente];
+  if(cfg.temAndares && estrutura.every(t=>!t.andares.length)) { alert('Adicione ao menos um andar.'); return; }
+  dataTorre = estrutura.map(() => { const o={}; cfg.modsBloco.forEach(m=>{o[m.id]=initD(m.id);}); return o; });
+  dataAndar = estrutura.map(t => t.andares.map(() => { const o={}; cfg.modsAndar.forEach(m=>{o[m.id]=initD(m.id);}); return o; }));
+  tIdx=0; aIdx=0; nivel='torre';
+  buildDots(1); showSc(1); updateHdr(); renderVistoria();
+  autoSave();
+}
+
+function initD(id) {
+  const b = {status:null, obs:''};
+  if(id==='sinalizacao') return {...b, rota:{status:null,items:SIN_ROTA.map(()=>({qt:'',manut:'',novo:''}))}, ext:{status:null,items:SIN_EXT.map(()=>({qt:'',manut:'',novo:''}))}, outros:{status:null,items:SIN_OUT.map(()=>({qt:'',manut:'',novo:''}))}, geral:{status:null,items:SIN_GER.map(()=>({qt:'',manut:'',novo:''}))}};
+  if(id==='para_raio')  return {...b, captacao:{status:null,antenas:'',ant_at:'',obs:'',mat:PR_CAPT.map(()=>({qt:''}))}, condutores:{status:null,tampas:'',tap_at:'',escada:'',esc_at:'',medicao:'',obs:'',mat:PR_COND.map(()=>({qt:''}))}, caixas:{status:null,obs:'',mat:PR_CX.map(()=>({qt:''}))}, aterramento:{status:null,cond_at:'',obs:'',mat:PR_AT.map(()=>({qt:''}))}};
+  if(id==='iluminacao')  return {...b,sistema:'autonomo',qtsAut:'',qtsCen:'',queimadas:'',novas:'',fiacao:'',dif:''};
+  if(id==='botoeiras')   return {...b,marca:'',qt:'',qt_troca:'',local_troca:'',qt_novas:'',local_novas:'',revisao:'',fiacao:''};
+  if(id==='detector')    return {...b,marca:'',qt:'',qt_troca:'',local_troca:'',qt_novas:'',local_novas:'',revisao:'',fiacao:''};
+  if(id==='shp')         return {...b,tipo:'bomba',cx:'',
+    // esguichos, adaptadores, tampões como listas
+    esguichos:[{modelo:'',qt:''}],
+    adaptadores:[{modelo:'',qt:''}],
+    tampoes:[{modelo:'',qt:''}],
+    chave:'',
+    mangueiras:[{modelo:'',mts:'',tipo:''}],
+    registros:[{modelo:'',qt:''}],
+    pbrita:'',tpres:'',ptub:'',pcon:'',tpress:''};
+  if(id==='pcf')         return {...b,lubrificacao:'',alinhamento:'',
+    portas:[{altura:'',largura:'',dupla:'N',antipanico:'N',local:'',problema:''}]};
+  if(id==='alarme')      return {...b,marca:'',tipo_sis:'',tensao:'',bat_func:'',bat_troca:'',sir_func:'',sir_troca:'',central_nova:'',teste:'',revisao:'',mapeamento:''};
+  if(id==='bomba')       return {...b,ligacao:'automatico',cv:'',qcv:'',tub:'',manometro:'',pressostato:'',alt:'',quadro_troca:''};
+  if(id==='sprinkler')   return {...b,bico_qt:'',bico_cor:'',gaiola_qt:'',pintura:'',teste:'',horas:''};
+  if(id==='gas')         return {...b,tipo:'JGN',qt_cil:'',venc_clk:'',marca_clk:'',venc_med:'',marca_med:'',pint_qt:'',pint_mts:'',clk_troca:'',con_mang:'',med_mts:'',estanque:''};
+  if(id==='escada')      return {...b,motor:'',qtd:'',cv:'',revisao:'',teste:'',correia:'',lubrificacao:'',grande:'',botao:''};
+  return b;
+}
+
+// ═══════════════════════════════════════════════
+// VISTORIA — RENDER
+// ═══════════════════════════════════════════════
+function setNivel(n) {
+  saveFields(); nivel=n;
+  document.getElementById('btnT').className='lv'+(n==='torre'?' on-t':'');
+  document.getElementById('btnA').className='lv'+(n==='andar'?' on-a':'');
+  renderVistoria();
+}
+
+function renderVistoria() {
+  const cfg = TIPOS[tipoCliente];
+  // switcher torre/andar só para condomínio
+  document.getElementById('wrapLvl').style.display = cfg.temAndares ? 'block' : 'none';
+  // tabs dos blocos
+  document.getElementById('tTabs').innerHTML = estrutura.map((t,i) =>
+    '<button class="ttab '+(i===tIdx?'on':getTSt(i))+'" onclick="selTorre('+i+')">'+t.nome+'</button>'
+  ).join('');
+  if(!cfg.temAndares || nivel==='torre') {
+    document.getElementById('aTabs').style.display='none';
+    document.getElementById('aprog').style.display='none';
+    const badge='<span class="nvl-badge nb-t">'+cfg.icon+' '+estrutura[tIdx].nome+'</span>';
+    renderMods(cfg.modsBloco, dataTorre[tIdx], badge, 'bloco');
+  } else {
+    document.getElementById('aTabs').style.display='flex';
+    document.getElementById('aprog').style.display='flex';
+    document.getElementById('aTabs').innerHTML = estrutura[tIdx].andares.map((a,i) =>
+      '<button class="atau '+(i===aIdx?'on':getASt(tIdx,i))+'" onclick="selAndar('+i+')">'+a+'</button>'
+    ).join('');
+    updateAprog();
+    const badge='<span class="nvl-badge nb-a">🏬 '+estrutura[tIdx].andares[aIdx]+'</span>';
+    renderMods(cfg.modsAndar, dataAndar[tIdx][aIdx], badge, 'andar');
+  }
+}
+
+function selTorre(i) { saveFields(); tIdx=i; aIdx=0; renderVistoria(); }
+function selAndar(i) { saveFields(); aIdx=i; renderVistoria(); }
+
+function updateAprog() {
+  const mods = TIPOS[tipoCliente].modsAndar;
+  const done = mods.filter(m => {
+    const d = dataAndar[tIdx][aIdx][m.id];
+    if(!d) return false;
+    if(m.id==='sinalizacao') return ['rota','ext','outros','geral'].some(g=>d[g]&&d[g].status);
+    if(m.id==='para_raio')   return ['captacao','condutores','caixas','aterramento'].some(g=>d[g]&&d[g].status);
+    return d.status;
+  }).length;
+  const pct = Math.round((done/Math.max(mods.length,1))*100);
+  document.getElementById('aprogFill').style.width = pct+'%';
+  document.getElementById('aprogTxt').textContent = done+'/'+mods.length+' módulos';
+}
+
+// ═══════════════════════════════════════════════
+// RENDER MÓDULOS
+// ═══════════════════════════════════════════════
+function renderMods(mods, dataObj, badge, nivelStr) {
+  let html = badge;
+  mods.forEach(mod => {
+    const d = dataObj[mod.id];
+    const stCls = modStCls(mod.id,d);
+    html += '<div class="mc '+stCls+'" id="mc-'+mod.id+'">';
+    html += '<div class="mc-head" onclick="toggleMc(\''+mod.id+'\')">';
+    html += '<span class="num">'+mod.num+'</span><span class="ico">'+mod.icon+'</span><span class="ttl">'+mod.nome+'</span>';
+    html += modBdg(mod.id,d)+'<span class="caret">▾</span></div>';
+    html += '<div class="mc-body">';
+    html += renderBody(mod.id, d, nivelStr);
+    html += '<div class="f" style="margin-top:10px"><label>Observações gerais</label><textarea id="obs-'+mod.id+'" placeholder="Situação, urgência, prioridade...">'+((d&&d.obs)||'')+'</textarea></div>';
+    html += '<button class="btn-sav" onclick="salvarMod(\''+mod.id+'\',\''+nivelStr+'\')">✓ Salvar módulo</button>';
+    html += '</div></div>';
+  });
+  document.getElementById('modsWrap').innerHTML = html;
+}
+
+function modStCls(id, d) {
+  if(!d) return '';
+  // sinalizacao: use top-level status
+  if(id==='sinalizacao') return d.status ? {aprovado:'ok',pendente:'pe',reprovado:'re',nao_possui:''}[d.status]||'' : '';
+  // para_raio: use top-level status
+  if(id==='para_raio')  return d.status ? {aprovado:'ok',pendente:'pe',reprovado:'re',nao_possui:''}[d.status]||'' : '';
+  return d.status ? {aprovado:'ok',pendente:'pe',reprovado:'re',nao_possui:''}[d.status]||'' : '';
+}
+
+function modBdg(id, d) {
+  if(!d||!d.status) return '';
+  const m={aprovado:['bdg-ok','✓ AP'],pendente:['bdg-pe','⚠ PEND'],reprovado:['bdg-re','✗ REP'],nao_possui:['bdg-np','N/P']};
+  const[c,l]=m[d.status]||['',''];
+  return l?'<span class="bdg '+c+'">'+l+'</span>':'';
+}
+
+function getBdg(st) {
+  const m={aprovado:['bdg-ok','✓ AP'],pendente:['bdg-pe','⚠ PEND'],reprovado:['bdg-re','✗ REP'],nao_possui:['bdg-np','N/P']};
+  const[c,l]=m[st]||['',''];
+  return l?'<span class="bdg '+c+'">'+l+'</span>':'';
+}
+
+function toggleMc(id) { document.getElementById('mc-'+id).classList.toggle('open'); }
+
+// ═══════════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════════
+function stRow(key, cur) {
+  const opts=[{v:'aprovado',l:'✓ AP',c:'s-ok'},{v:'pendente',l:'⚠ PEND',c:'s-pe'},{v:'reprovado',l:'✗ REP',c:'s-re'},{v:'nao_possui',l:'N/P',c:'s-np'}];
+  return '<div class="st-row">'+opts.map(o=>'<button class="stb '+(cur===o.v?o.c:'')+'" onclick="setSt(\''+key+'\',\''+o.v+'\')">'+o.l+'</button>').join('')+'</div>';
+}
+
+function setSt(key, val) {
+  const parts=key.split('.'), modId=parts[0], subId=parts[1];
+  const dObj = nivel==='andar' ? dataAndar[tIdx][aIdx] : dataTorre[tIdx];
+  if(subId) {
+    dObj[modId][subId].status = val;
+    const ss=document.getElementById('ss-'+modId+'-'+subId);
+    if(ss) {
+      ss.className='subsec open '+(val==='aprovado'?'ok-s':val==='pendente'?'pe-s':val==='reprovado'?'re-s':'');
+      ss.querySelectorAll('.stb').forEach(b=>{b.className='stb'; if(b.getAttribute('onclick').includes("'"+key+"','"+val+"'"))b.className='stb '+{aprovado:'s-ok',pendente:'s-pe',reprovado:'s-re',nao_possui:'s-np'}[val];});
+      const ps=ss.querySelector('.pend-sec');
+      if(ps) ps.className='pend-sec'+(val==='pendente'?' vis':val==='reprovado'?' vis rep':'');
+    }
+  } else {
+    dObj[modId].status = val;
+    const mc=document.getElementById('mc-'+modId);
+    if(mc) {
+      mc.className='mc open '+modStCls(modId,dObj[modId]);
+      mc.querySelectorAll('.mc-body > .st-row .stb').forEach(b=>{b.className='stb'; if(b.getAttribute('onclick').includes("'"+key+"','"+val+"'"))b.className='stb '+{aprovado:'s-ok',pendente:'s-pe',reprovado:'s-re',nao_possui:'s-np'}[val];});
+      const ps=mc.querySelector('.pend-sec');
+      if(ps) ps.className='pend-sec'+(val==='pendente'?' vis':val==='reprovado'?' vis rep':'');
+    }
+  }
+  // update badge
+  const mc=document.getElementById('mc-'+modId);
+  if(mc){const h=mc.querySelector('.mc-head'),ob=h.querySelector('.bdg');if(ob)ob.remove();const car=h.querySelector('.caret'),sp=document.createElement('span');sp.innerHTML=modBdg(modId,dObj[modId]);if(sp.firstElementChild)h.insertBefore(sp.firstElementChild,car);}
+  updateTabs();
+  autoSave();
+}
+
+function toggleSS(id) { document.getElementById('ss-'+id).classList.toggle('open'); }
+
+// ═══════════════════════════════════════════════
+// RENDER BODIES
+// ═══════════════════════════════════════════════
+function fi(id,lbl,val,ph){return '<div class="f"><label>'+lbl+'</label><input id="'+id+'" value="'+(val||'')+'" placeholder="'+(ph||'')+'" oninput="autoSave()"></div>';}
+function fs(id,lbl,val,opts){return '<div class="f"><label>'+lbl+'</label><select id="'+id+'" onchange="autoSave()">'+opts.map(o=>'<option value="'+o.v+'"'+(val===o.v?' selected':'')+'>'+o.l+'</option>').join('')+'</select></div>';}
+function fta(id,lbl,val,ph){return '<div class="f"><label>'+lbl+'</label><textarea id="'+id+'" placeholder="'+(ph||'')+'" oninput="autoSave()">'+(val||'')+'</textarea></div>';}
+const YN=[{v:'',l:'—'},{v:'S',l:'SIM'},{v:'N',l:'NÃO'}];
+
+function sinTbl(arr,items,pfx){
+  let rows=arr.map((l,i)=>'<tr><td>'+l+'</td><td><input type="text" id="'+pfx+'_qt_'+i+'" value="'+(items[i].qt||'')+'" placeholder="0" oninput="autoSave()"></td><td><input type="text" id="'+pfx+'_mn_'+i+'" value="'+(items[i].manut||'')+'" placeholder="0" oninput="autoSave()"></td><td><input type="text" id="'+pfx+'_nv_'+i+'" value="'+(items[i].novo||'')+'" placeholder="0" oninput="autoSave()"></td></tr>').join('');
+  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Item</th><th style="width:44px">QT</th><th style="width:50px">Manut</th><th style="width:50px">Novo</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function matTbl(arr,mat,pfx){
+  let rows=arr.map((l,i)=>'<tr><td>'+l+'</td><td><input type="text" id="'+pfx+'_qt_'+i+'" value="'+(mat[i].qt||'')+'" placeholder="0" oninput="autoSave()"></td></tr>').join('');
+  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th style="width:64px">QT</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function mkSubsec(modId,subId,title,diagHtml,matHtml,d) {
+  const st=d.status, stCls=st==='aprovado'?'ok-s':st==='pendente'?'pe-s':st==='reprovado'?'re-s':'';
+  let html='<div class="subsec '+stCls+'" id="ss-'+modId+'-'+subId+'">';
+  html+='<div class="subsec-head" onclick="toggleSS(\''+modId+'-'+subId+'\')"><span class="s-ttl">'+title+'</span>'+getBdg(st)+'<span class="s-car">▾</span></div>';
+  html+='<div class="subsec-body">';
+  if(diagHtml) html+=diagHtml;
+  if(matHtml)  html+='<div class="pend-lbl" style="margin-top:10px">⚠ Materiais necessários</div>'+matHtml;
+  html+=fta('obs-'+modId+'-'+subId,'Obs. desta parte',d.obs,'Detalhe...');
+  html+='</div></div>';
+  return html;
+}
+
+function renderBody(id, d, nivelStr) {
+  if(!d) return '';
+  const isPend=d.status==='pendente'||d.status==='reprovado';
+
+  if(id==='sinalizacao') return (
+    stRow('sinalizacao',d.status)+
+    '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'">'+
+    '<div class="pend-lbl">⚠ Detalhe por grupo — marque o status de cada grupo e preencha os itens</div>'+
+    mkSubsec('sinalizacao','rota','🏃 Rota de Fuga','',sinTbl(SIN_ROTA,d.rota.items,'sr'),d.rota)+
+    mkSubsec('sinalizacao','ext','🧯 Extintores','',sinTbl(SIN_EXT,d.ext.items,'se'),d.ext)+
+    mkSubsec('sinalizacao','outros','⚠ Outros','',sinTbl(SIN_OUT,d.outros.items,'so'),d.outros)+
+    mkSubsec('sinalizacao','geral','🪧 Sinalização Geral','',sinTbl(SIN_GER,d.geral.items,'sg'),d.geral)+
+    '</div>'
+  );
+
+  if(id==='para_raio') return (
+    stRow('para_raio',d.status)+
+    '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'">'+
+    '<div class="pend-lbl">⚠ Detalhe por subsistema — marque e preencha o que está com problema</div>'+
+    mkSubsec('para_raio','captacao','⚡ Captação',
+      '<div class="r2">'+fi('pr_ant','QTD de Antenas',d.captacao.antenas,'0')+fi('pr_ant_at','São aterradas?',d.captacao.ant_at,'S/N/Qt')+'</div>',
+      matTbl(PR_CAPT,d.captacao.mat,'prc'),d.captacao)+
+    mkSubsec('para_raio','condutores','📡 Condutores / Descidas',
+      '<div class="r2">'+fi('pr_tap','QTD de Tampas',d.condutores.tampas,'0')+fi('pr_tap_at','São aterradas?',d.condutores.tap_at,'S/N/Qt')+'</div>'+
+      '<div class="r2">'+fi('pr_esc','Escada marinheiro QTD',d.condutores.escada,'0')+fi('pr_esc_at','São aterradas?',d.condutores.esc_at,'S/N/Qt')+'</div>'+
+      fi('pr_med','Medição Ôhmica',d.condutores.medicao,'Valor em Ω'),
+      matTbl(PR_COND,d.condutores.mat,'prd'),d.condutores)+
+    mkSubsec('para_raio','caixas','📦 Caixas de Inspeção','',matTbl(PR_CX,d.caixas.mat,'prx'),d.caixas)+
+    mkSubsec('para_raio','aterramento','🌍 Aterramento / Malha',
+      fi('pr_cat','Ar cond. aterrado?',d.aterramento.cond_at,'S/N/Qt'),
+      matTbl(PR_AT,d.aterramento.mat,'pra'),d.aterramento)+
+    '</div>'
+  );
+
+  if(id==='iluminacao') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    fs('il_sis','Sistema',d.sistema,[{v:'autonomo',l:'Bloco Autônomo'},{v:'central',l:'Central Bolinha'}])+
+    '<div class="r2">'+fi('il_aut','QT Autônomo',d.qtsAut,'0')+fi('il_cen','QT Central',d.qtsCen,'0')+'</div>'+
+    stRow('iluminacao',d.status)+
+    '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'">'+
+    '<div class="pend-lbl">⚠ Detalhe a situação</div>'+
+    fta('il_que','Queimadas — quantas e local?',d.queimadas,'Ex: 2 queimadas no 3° andar, corredor...')+
+    fta('il_nov','Novas — tipo e local?',d.novas,'Ex: 1 bloco autônomo no hall de entrada...')+
+    '<div class="r2">'+fi('il_fiac','Fiação/Tomadas',d.fiacao,'Estado')+fi('il_dif','Grau de dificuldade',d.dif,'Fácil/Médio/Difícil')+'</div>'+
+    '</div>'
+  );
+
+  if(id==='botoeiras') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    fi('bo_mar','Marca',d.marca,'Marca das botoeiras')+
+    '<div class="r2">'+fi('bo_qt','QT total',d.qt,'0')+fi('bo_tro','QT p/ troca',d.qt_troca,'0')+'</div>'+
+    fi('bo_ltr','Local da troca',d.local_troca,'Ex: 2° andar...')+
+    '<div class="r2">'+fi('bo_nov','QT novas',d.qt_novas,'0')+fi('bo_lno','Local novas',d.local_novas,'Local...')+'</div>'+
+    stRow('botoeiras',d.status)+
+    '<div class="r2">'+fs('bo_rev','Revisão?',d.revisao,YN)+fi('bo_fiac','Fiação',d.fiacao,'OK/Pendente')+'</div>'
+  );
+
+  if(id==='detector') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    fi('df_mar','Marca',d.marca,'Marca dos detectores')+
+    '<div class="r2">'+fi('df_qt','QT total',d.qt,'0')+fi('df_tro','QT p/ troca',d.qt_troca,'0')+'</div>'+
+    fi('df_ltr','Local da troca',d.local_troca,'Ex: 3° andar...')+
+    '<div class="r2">'+fi('df_nov','QT novas',d.qt_novas,'0')+fi('df_lno','Local novas',d.local_novas,'Local...')+'</div>'+
+    stRow('detector',d.status)+
+    '<div class="r2">'+fs('df_rev','Revisão?',d.revisao,YN)+fi('df_fiac','Fiação',d.fiacao,'OK/Pendente')+'</div>'
+  );
+
+  if(id==='shp') {
+    const MODELOS_MANG=[{v:'',l:'Selecione'},{v:'1½',l:'1½"'},{v:'2½',l:'2½"'}];
+    const METROS_MANG=[{v:'',l:'Selecione'},{v:'15',l:'15m'},{v:'20',l:'20m'},{v:'25',l:'25m'},{v:'30',l:'30m'}];
+    const TIPO_MANG=[{v:'',l:'Selecione'},{v:'1',l:'Tipo 1'},{v:'2',l:'Tipo 2'},{v:'3',l:'Tipo 3'},{v:'4',l:'Tipo 4'}];
+    const MODELOS_ES=[{v:'',l:'Selecione'},{v:'1½',l:'1½"'},{v:'2½',l:'2½"'}];
+    const MODELOS_AD=[{v:'',l:'Selecione'},{v:'1½',l:'1½"'},{v:'2½',l:'2½"'}];
+    const MODELOS_TP=[{v:'',l:'Selecione'},{v:'1½',l:'1½"'},{v:'2½',l:'2½"'}];
+    const MODELOS_RG=[{v:'',l:'Selecione'},{v:'90',l:'90°'},{v:'45',l:'45°'}];
+
+    const mangueirasHtml = () => {
+      let h='<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text2);margin:10px 0 6px">Mangueiras</div>';
+      (d.mangueiras||[{modelo:'',mts:'',tipo:''}]).forEach((m,i)=>{
+        h+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;margin-bottom:6px">';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">Mangueira '+(i+1)+'</span>';
+        if(i>0) h+='<button onclick="rmShpItem(\'mangueiras\','+i+')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer">×</button>';
+        h+='</div>';
+        h+='<div class="r3">';
+        h+=fs('shp_mmod_'+i,'Modelo',m.modelo,MODELOS_MANG);
+        h+=fs('shp_mmts_'+i,'Comprimento',m.mts,METROS_MANG);
+        h+=fs('shp_mtp_'+i,'Tipo',m.tipo,TIPO_MANG);
+        h+='</div></div>';
+      });
+      h+='<button onclick="addShpItem(\'mangueiras\')" style="width:100%;padding:8px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:transparent;color:var(--blue);font-family:\'Barlow\',sans-serif;font-size:13px;font-weight:700;cursor:pointer">+ Mangueira</button>';
+      return h;
+    };
+
+    const listaHtml = (key,label,items,modelos) => {
+      let h='<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text2);margin:10px 0 6px">'+label+'</div>';
+      (items||[{modelo:'',qt:''}]).forEach((item,i)=>{
+        h+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">';
+        h+=fs('shp_'+key+'mod_'+i,'Modelo',item.modelo,modelos);
+        h+=fi('shp_'+key+'qt_'+i,'QT',item.qt,'0');
+        if(i>0) h+='<button onclick="rmShpItem(\''+key+'\','+i+')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;flex-shrink:0">×</button>';
+        h+='</div>';
+      });
+      h+='<button onclick="addShpItem(\''+key+'\')" style="width:100%;padding:7px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:transparent;color:var(--blue);font-family:\'Barlow\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:2px">+ '+label.split(' ')[0]+'</button>';
+      return h;
+    };
+
+    return (
+      '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+      '<div class="r2">'+fs('shp_tp','SHP é por',d.tipo,[{v:'bomba',l:'BOMBA'},{v:'gravidade',l:'GRAVIDADE'}])+fs('shp_cx','CX Incêndio completas?',d.cx,YN)+'</div>'+
+      listaHtml('esguichos','Esguichos',d.esguichos,MODELOS_ES)+
+      listaHtml('adaptadores','Adaptadores',d.adaptadores,MODELOS_AD)+
+      listaHtml('tampoes','Tampões',d.tampoes,MODELOS_TP)+
+      fi('shp_chv','Chave QT',d.chave,'0')+
+      mangueirasHtml()+
+      listaHtml('registros','Registros',d.registros,MODELOS_RG)+
+      stRow('shp',d.status)+
+      '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'"><div class="pend-lbl">⚠ Serviços necessários</div>'+
+      '<div class="r2">'+fs('shp_pb','Pintura + brita HR?',d.pbrita,YN)+fi('shp_tpq','Tanque pressão QT',d.tpres,'0')+'</div>'+
+      '<div class="r2">'+fi('shp_ptu','Pintura tubulação QT',d.ptub,'0')+fi('shp_pco','Pintura conexões QT',d.pcon,'0')+'</div>'+
+      fs('shp_tpr','Teste de pressão e vazão?',d.tpress,YN)+'</div>'
+    );
+  }
+
+  if(id==='pcf') {
+    const portasHtml = () => {
+      let h='<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text2);margin:10px 0 6px">Portas Inspecionadas</div>';
+      (d.portas||[]).forEach((p,i)=>{
+        h+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px">';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+        h+='<span style="font-size:13px;font-weight:700">Porta '+(i+1)+'</span>';
+        if(i>0) h+='<button onclick="rmPcfPorta('+i+')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer">×</button>';
+        h+='</div>';
+        h+=fi('pcf_local_'+i,'Local / Identificação',p.local,'Ex: 3° andar, escada sul...');
+        h+='<div class="r2">'+fi('pcf_alt_'+i,'Altura (m)',p.altura,'Ex: 2.10')+fi('pcf_larg_'+i,'Largura (m)',p.largura,'Ex: 0.90')+'</div>';
+        h+='<div class="r2">'+fs('pcf_dup_'+i,'Porta dupla?',p.dupla,[{v:'N',l:'Não'},{v:'S',l:'Sim'}])+fs('pcf_ap_'+i,'Barra antipânico?',p.antipanico,[{v:'N',l:'Não'},{v:'S',l:'Sim'}])+'</div>';
+        h+=fta('pcf_prob_'+i,'Problema / Pendência',p.problema,'Ex: dobradiça quebrada, não fecha...');
+        h+='</div>';
+      });
+      h+='<button onclick="addPcfPorta()" style="width:100%;padding:9px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:transparent;color:var(--blue);font-family:\'Barlow\',sans-serif;font-size:13px;font-weight:700;cursor:pointer">+ Adicionar Porta</button>';
+      return h;
+    };
+    return (
+      stRow('pcf',d.status)+
+      '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'">'+
+      '<div class="pend-lbl">⚠ Detalhe as portas com pendência</div>'+
+      portasHtml()+
+      fta('pcf_lub','Lubrificação geral (observações)',d.lubrificacao,'Ex: todas as portas precisam...')+
+      fta('pcf_ali','Alinhamento (observações)',d.alinhamento,'Ex: porta do 5° andar...')+
+      '</div>'
+    );
+  }
+
+  if(id==='alarme') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    '<div class="r2">'+fi('al_mar','Marca',d.marca,'Marca da central')+fi('al_tip','Tipo de sistema',d.tipo_sis,'Ex: Endereçável')+'</div>'+
+    fi('al_ten','Tensão (V)',d.tensao,'Ex: 12V')+
+    '<div class="r2">'+fi('al_bf','Baterias — funcionando',d.bat_func,'S/N/Qt')+fi('al_bt','Baterias — troca QT',d.bat_troca,'0')+'</div>'+
+    '<div class="r2">'+fi('al_sf','Sirenes — funcionando',d.sir_func,'S/N/Qt')+fi('al_st','Sirenes — troca QT',d.sir_troca,'0')+'</div>'+
+    stRow('alarme',d.status)+
+    '<div class="r2">'+fs('al_cn','Central nova?',d.central_nova,YN)+fs('al_tes','Teste realizado?',d.teste,YN)+'</div>'+
+    '<div class="r2">'+fs('al_rev','Revisão?',d.revisao,YN)+fs('al_map','Mapeamento?',d.mapeamento,YN)+'</div>'
+  );
+
+  if(id==='bomba') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    '<div class="r2">'+fs('bom_lig','Ligação',d.ligacao,[{v:'automatico',l:'AUTOMÁTICO'},{v:'manual',l:'MANUAL'}])+fi('bom_cv','CV da bomba',d.cv,'Ex: 5CV')+'</div>'+
+    '<div class="r2">'+fi('bom_qcv','Quadro comando CV',d.qcv,'CV')+fi('bom_tub','Tubulação (pol.)',d.tub,'Ex: 2½')+'</div>'+
+    stRow('bomba',d.status)+
+    '<div class="r2">'+fs('bom_man','Troca manômetro?',d.manometro,YN)+fs('bom_pre','Troca pressostato?',d.pressostato,YN)+'</div>'+
+    '<div class="r2">'+fi('bom_alt','Alto ou Baixo?',d.alt,'Alto/Baixo')+fs('bom_qtr','Troca quadro cmd?',d.quadro_troca,YN)+'</div>'
+  );
+
+  if(id==='sprinkler') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    '<div class="r2">'+fi('sp_bq','Bicos QT',d.bico_qt,'0')+fi('sp_bc','Bicos — cor',d.bico_cor,'Ex: Vermelho')+'</div>'+
+    fi('sp_gq','Gaiolas QT',d.gaiola_qt,'0')+
+    stRow('sprinkler',d.status)+
+    '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'"><div class="pend-lbl">⚠ Serviços necessários</div>'+
+    '<div class="r2">'+fs('sp_pin','Pintura tubulação?',d.pintura,YN)+fs('sp_tes','Teste na rede?',d.teste,YN)+'</div>'+
+    fi('sp_hor','Horas de teste',d.horas,'Ex: 2h')+'</div>'
+  );
+
+  if(id==='gas') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    '<div class="r2">'+fs('ga_tip','Tipo',d.tipo,[{v:'JGN',l:'JGN'},{v:'GLP',l:'GLP'}])+fi('ga_qtc','QT cilindros',d.qt_cil,'0')+'</div>'+
+    '<div class="r2">'+fi('ga_vcl','Venc. Click/Reg.',d.venc_clk,'MM/AAAA')+fi('ga_mcl','Marca Click',d.marca_clk,'Marca')+'</div>'+
+    '<div class="r2">'+fi('ga_vmd','Venc. Medidor',d.venc_med,'MM/AAAA')+fi('ga_mmd','Marca Medidor',d.marca_med,'Marca')+'</div>'+
+    stRow('gas',d.status)+
+    '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'"><div class="pend-lbl">⚠ Serviços necessários</div>'+
+    '<div class="r2">'+fi('ga_pq','Pintura tub. QT',d.pint_qt,'0')+fi('ga_pm','Pintura tub. Mts',d.pint_mts,'0')+'</div>'+
+    '<div class="r2">'+fi('ga_ct','Click/Reg. p/ troca',d.clk_troca,'0')+fi('ga_cm','Conexão mangueira',d.con_mang,'0')+'</div>'+
+    '<div class="r2">'+fi('ga_mm','Medidores troca Mts',d.med_mts,'0')+fs('ga_est','Teste estanqueidade?',d.estanque,YN)+'</div></div>'
+  );
+
+  if(id==='escada') return (
+    '<div class="diag-lbl" style="margin-top:10px">Diagnóstico</div>'+
+    '<div class="r3">'+fi('esc_mot','Motor',d.motor,'Marca/Modelo')+fi('esc_qtd','QTD',d.qtd,'0')+fi('esc_cv','CV',d.cv,'CV')+'</div>'+
+    stRow('escada',d.status)+
+    '<div class="r3">'+fs('esc_rev','Revisão?',d.revisao,YN)+fs('esc_tes','Teste?',d.teste,YN)+fs('esc_cor','Correia?',d.correia,[{v:'',l:'—'},{v:'BOA',l:'BOA'},{v:'RUIM',l:'RUIM'}])+'</div>'+
+    '<div class="r3">'+fs('esc_lub','Lubrificação?',d.lubrificacao,YN)+fs('esc_gra','Grande?',d.grande,[{v:'',l:'—'},{v:'PRESENTE',l:'PRESENTE'},{v:'NAO',l:'NÃO'}])+fs('esc_bot','Botão emerg.?',d.botao,[{v:'',l:'—'},{v:'OPERANTE',l:'OPERANTE'},{v:'NAO',l:'NÃO OPERANTE'}])+'</div>'
+  );
+
+  return '';
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS DINÂMICOS SHP / PCF
+// ═══════════════════════════════════════════════
+function getShpD() {
+  const dObj = nivel==='andar' ? dataAndar[tIdx][aIdx] : dataTorre[tIdx];
+  return dObj['shp'];
+}
+function addShpItem(key) {
+  const d = getShpD();
+  const defaults = {mangueiras:{modelo:'',mts:'',tipo:''}, esguichos:{modelo:'',qt:''}, adaptadores:{modelo:'',qt:''}, tampoes:{modelo:'',qt:''}, registros:{modelo:'',qt:''}};
+  if(!d[key]) d[key]=[];
+  d[key].push({...defaults[key]});
+  // re-render just the shp body
+  const mc=document.getElementById('mc-shp');
+  if(mc&&mc.classList.contains('open')){
+    const body=mc.querySelector('.mc-body');
+    if(body){const obs=document.getElementById('obs-shp');const obsVal=obs?obs.value:'';saveFieldsFor('shp',nivel==='andar'?dataAndar[tIdx][aIdx]:dataTorre[tIdx]);body.innerHTML=renderBody('shp',d,'')+'<div class="f" style="margin-top:10px"><label>OBSERVAÇÕES GERAIS</label><textarea id="obs-shp" placeholder="Situação, urgência..." oninput="autoSave()">'+obsVal+'</textarea></div><button class="btn-sav" onclick="salvarMod(\'shp\',\''+nivel+'\')">✓ Salvar módulo</button>';}
+  }
+  autoSave();
+}
+function rmShpItem(key, idx) {
+  const d = getShpD();
+  if(d[key]&&d[key].length>1){d[key].splice(idx,1);addShpItem=addShpItem;} // trigger re-render via addShpItem trick
+  // simpler: just save and re-render
+  d[key].splice(idx,1);
+  const mc=document.getElementById('mc-shp');
+  if(mc&&mc.classList.contains('open')){const body=mc.querySelector('.mc-body');if(body){const obs=document.getElementById('obs-shp');const obsVal=obs?obs.value:'';body.innerHTML=renderBody('shp',d,'')+'<div class="f" style="margin-top:10px"><label>OBSERVAÇÕES GERAIS</label><textarea id="obs-shp" placeholder="Situação, urgência..." oninput="autoSave()">'+obsVal+'</textarea></div><button class="btn-sav" onclick="salvarMod(\'shp\',\''+nivel+'\')">✓ Salvar módulo</button>';}}
+  autoSave();
+}
+function getPcfD() {
+  const dObj = nivel==='andar' ? dataAndar[tIdx][aIdx] : dataTorre[tIdx];
+  return dObj['pcf'];
+}
+function addPcfPorta() {
+  const d = getPcfD();
+  if(!d.portas) d.portas=[];
+  d.portas.push({altura:'',largura:'',dupla:'N',antipanico:'N',local:'',problema:''});
+  reRenderPcf(d);
+  autoSave();
+}
+function rmPcfPorta(idx) {
+  const d = getPcfD();
+  if(d.portas&&d.portas.length>0) d.portas.splice(idx,1);
+  reRenderPcf(d);
+  autoSave();
+}
+function reRenderPcf(d) {
+  const mc=document.getElementById('mc-pcf');
+  if(mc&&mc.classList.contains('open')){
+    const body=mc.querySelector('.mc-body');
+    if(body){
+      const obs=document.getElementById('obs-pcf');const obsVal=obs?obs.value:'';
+      body.innerHTML=renderBody('pcf',d,'')+'<div class="f" style="margin-top:10px"><label>OBSERVAÇÕES GERAIS</label><textarea id="obs-pcf" placeholder="Situação, urgência..." oninput="autoSave()">'+obsVal+'</textarea></div><button class="btn-sav" onclick="salvarMod(\'pcf\',\''+nivel+'\')">✓ Salvar módulo</button>';
+    }
+  }
+}
+function salvarMod(modId, nivelStr) {
+  const dObj = nivelStr==='andar' ? dataAndar[tIdx][aIdx] : dataTorre[tIdx];
+  const obsEl = document.getElementById('obs-'+modId);
+  if(obsEl) dObj[modId].obs = obsEl.value;
+  saveFieldsFor(modId, dObj);
+  document.getElementById('mc-'+modId).classList.remove('open');
+  updateTabs();
+  autoSave();
+  showToast();
+}
+
+function saveFields() {
+  const cfg = TIPOS[tipoCliente];
+  if(!cfg) return;
+  const mods = nivel==='andar' ? cfg.modsAndar : cfg.modsBloco;
+  const dObj = nivel==='andar' ? dataAndar[tIdx][aIdx] : dataTorre[tIdx];
+  if(!dObj) return;
+  mods.forEach(mod => {
+    const obsEl = document.getElementById('obs-'+mod.id);
+    if(obsEl) dObj[mod.id].obs = obsEl.value;
+    saveFieldsFor(mod.id, dObj);
+  });
+}
+
+function gv(id) { const el=document.getElementById(id); return el?el.value:''; }
+
+function saveFieldsFor(id, dObj) {
+  const d = dObj[id];
+  if(!d) return;
+  if(id==='sinalizacao'){
+    SIN_ROTA.forEach((_,i)=>{d.rota.items[i].qt=gv('sr_qt_'+i);d.rota.items[i].manut=gv('sr_mn_'+i);d.rota.items[i].novo=gv('sr_nv_'+i);});
+    SIN_EXT.forEach((_,i)=>{d.ext.items[i].qt=gv('se_qt_'+i);d.ext.items[i].manut=gv('se_mn_'+i);d.ext.items[i].novo=gv('se_nv_'+i);});
+    SIN_OUT.forEach((_,i)=>{d.outros.items[i].qt=gv('so_qt_'+i);d.outros.items[i].manut=gv('so_mn_'+i);d.outros.items[i].novo=gv('so_nv_'+i);});
+    SIN_GER.forEach((_,i)=>{d.geral.items[i].qt=gv('sg_qt_'+i);d.geral.items[i].manut=gv('sg_mn_'+i);d.geral.items[i].novo=gv('sg_nv_'+i);});
+    ['rota','ext','outros','geral'].forEach(k=>{const el=document.getElementById('obs-sinalizacao-'+k);if(el)d[k].obs=el.value;});
+    return;
+  }
+  if(id==='para_raio'){
+    d.captacao.antenas=gv('pr_ant');d.captacao.ant_at=gv('pr_ant_at');
+    d.condutores.tampas=gv('pr_tap');d.condutores.tap_at=gv('pr_tap_at');d.condutores.escada=gv('pr_esc');d.condutores.esc_at=gv('pr_esc_at');d.condutores.medicao=gv('pr_med');
+    d.aterramento.cond_at=gv('pr_cat');
+    PR_CAPT.forEach((_,i)=>d.captacao.mat[i].qt=gv('prc_qt_'+i));
+    PR_COND.forEach((_,i)=>d.condutores.mat[i].qt=gv('prd_qt_'+i));
+    PR_CX.forEach((_,i)=>d.caixas.mat[i].qt=gv('prx_qt_'+i));
+    PR_AT.forEach((_,i)=>d.aterramento.mat[i].qt=gv('pra_qt_'+i));
+    ['captacao','condutores','caixas','aterramento'].forEach(k=>{const el=document.getElementById('obs-para_raio-'+k);if(el)d[k].obs=el.value;});
+    return;
+  }
+  if(id==='iluminacao')  {Object.assign(d,{sistema:gv('il_sis'),qtsAut:gv('il_aut'),qtsCen:gv('il_cen'),queimadas:gv('il_que'),novas:gv('il_nov'),fiacao:gv('il_fiac'),dif:gv('il_dif')});return;}
+  if(id==='botoeiras')   {Object.assign(d,{marca:gv('bo_mar'),qt:gv('bo_qt'),qt_troca:gv('bo_tro'),local_troca:gv('bo_ltr'),qt_novas:gv('bo_nov'),local_novas:gv('bo_lno'),revisao:gv('bo_rev'),fiacao:gv('bo_fiac')});return;}
+  if(id==='detector')    {Object.assign(d,{marca:gv('df_mar'),qt:gv('df_qt'),qt_troca:gv('df_tro'),local_troca:gv('df_ltr'),qt_novas:gv('df_nov'),local_novas:gv('df_lno'),revisao:gv('df_rev'),fiacao:gv('df_fiac')});return;}
+  if(id==='shp') {
+    d.tipo=gv('shp_tp'); d.cx=gv('shp_cx'); d.chave=gv('shp_chv');
+    d.pbrita=gv('shp_pb'); d.tpres=gv('shp_tpq'); d.ptub=gv('shp_ptu'); d.pcon=gv('shp_pco'); d.tpress=gv('shp_tpr');
+    ['mangueiras','esguichos','adaptadores','tampoes','registros'].forEach(key=>{
+      (d[key]||[]).forEach((item,i)=>{
+        if(key==='mangueiras'){item.modelo=gv('shp_mmod_'+i);item.mts=gv('shp_mmts_'+i);item.tipo=gv('shp_mtp_'+i);}
+        else{item.modelo=gv('shp_'+key+'mod_'+i);item.qt=gv('shp_'+key+'qt_'+i);}
+      });
+    });
+    return;
+  }
+  if(id==='pcf') {
+    d.lubrificacao=gv('pcf_lub'); d.alinhamento=gv('pcf_ali');
+    (d.portas||[]).forEach((p,i)=>{
+      p.local=gv('pcf_local_'+i); p.altura=gv('pcf_alt_'+i); p.largura=gv('pcf_larg_'+i);
+      p.dupla=gv('pcf_dup_'+i); p.antipanico=gv('pcf_ap_'+i);
+      p.problema=gv('pcf_prob_'+i);
+    });
+    return;
+  }
+  if(id==='alarme')      {Object.assign(d,{marca:gv('al_mar'),tipo_sis:gv('al_tip'),tensao:gv('al_ten'),bat_func:gv('al_bf'),bat_troca:gv('al_bt'),sir_func:gv('al_sf'),sir_troca:gv('al_st'),central_nova:gv('al_cn'),teste:gv('al_tes'),revisao:gv('al_rev'),mapeamento:gv('al_map')});return;}
+  if(id==='bomba')       {Object.assign(d,{ligacao:gv('bom_lig'),cv:gv('bom_cv'),qcv:gv('bom_qcv'),tub:gv('bom_tub'),manometro:gv('bom_man'),pressostato:gv('bom_pre'),alt:gv('bom_alt'),quadro_troca:gv('bom_qtr')});return;}
+  if(id==='sprinkler')   {Object.assign(d,{bico_qt:gv('sp_bq'),bico_cor:gv('sp_bc'),gaiola_qt:gv('sp_gq'),pintura:gv('sp_pin'),teste:gv('sp_tes'),horas:gv('sp_hor')});return;}
+  if(id==='gas')         {Object.assign(d,{tipo:gv('ga_tip'),qt_cil:gv('ga_qtc'),venc_clk:gv('ga_vcl'),marca_clk:gv('ga_mcl'),venc_med:gv('ga_vmd'),marca_med:gv('ga_mmd'),pint_qt:gv('ga_pq'),pint_mts:gv('ga_pm'),clk_troca:gv('ga_ct'),con_mang:gv('ga_cm'),med_mts:gv('ga_mm'),estanque:gv('ga_est')});return;}
+  if(id==='escada')      {Object.assign(d,{motor:gv('esc_mot'),qtd:gv('esc_qtd'),cv:gv('esc_cv'),revisao:gv('esc_rev'),teste:gv('esc_tes'),correia:gv('esc_cor'),lubrificacao:gv('esc_lub'),grande:gv('esc_gra'),botao:gv('esc_bot')});return;}
+}
+
+// ═══════════════════════════════════════════════
+// TABS STATUS
+// ═══════════════════════════════════════════════
+function getTSt(ti) {
+  const cfg=TIPOS[tipoCliente]; if(!cfg) return '';
+  const sts=cfg.modsBloco.map(m=>{const d=dataTorre[ti]&&dataTorre[ti][m.id];return d?modStCls(m.id,d):'';}).filter(Boolean);
+  if(!sts.length) return '';
+  if(sts.some(s=>s==='re')) return 't-r';
+  if(sts.some(s=>s==='pe')) return 't-p';
+  if(sts.every(s=>s==='ok')) return 't-g';
+  return '';
+}
+function getASt(ti, ai) {
+  const cfg=TIPOS[tipoCliente]; if(!cfg) return '';
+  const sts=cfg.modsAndar.map(m=>{const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][m.id];return d?modStCls(m.id,d):'';}).filter(Boolean);
+  if(!sts.length) return '';
+  if(sts.some(s=>s==='re')) return 'a-r';
+  if(sts.some(s=>s==='pe')) return 'a-p';
+  if(sts.every(s=>s==='ok')) return 'a-g';
+  return '';
+}
+function updateTabs() {
+  document.querySelectorAll('.ttab').forEach((el,i)=>el.className='ttab '+(i===tIdx?'on':getTSt(i)));
+  if(nivel==='andar') document.querySelectorAll('.atau').forEach((el,i)=>el.className='atau '+(i===aIdx?'on':getASt(tIdx,i)));
+}
+
+// ═══════════════════════════════════════════════
+// RESUMO
+// ═══════════════════════════════════════════════
+function irResumo() { saveFields(); buildResumo(); showSc(2); buildDots(2); }
+function voltarVistoria() { showSc(1); buildDots(1); }
+
+function buildResumo() {
+  const cfg = TIPOS[tipoCliente]||{};
+  document.getElementById('sC').textContent  = gv('fCod')||'—';
+  document.getElementById('sD').textContent  = fmtD(gv('fData'));
+  document.getElementById('sCl').textContent = gv('fCliente')||'—';
+  document.getElementById('sTe').textContent = gv('fTec')||'—';
+  let tp=0, tr=0, html='';
+  estrutura.forEach((bloco,ti) => {
+    let bH='', aH='';
+    (cfg.modsBloco||[]).forEach(mod => {
+      const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
+      const cls=modStCls(mod.id,d);
+      if(cls==='pe'||cls==='re'){
+        cls==='pe'?tp++:tr++;
+        bH+='<div class="sum-item">'+modBdg(mod.id,d)+' <strong>'+mod.icon+' '+mod.nome+'</strong><span>'+(d.obs||'')+'</span></div>';
+      }
+    });
+    (bloco.andares||[]).forEach((andar,ai) => {
+      (cfg.modsAndar||[]).forEach(mod => {
+        const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
+        const cls=modStCls(mod.id,d);
+        if(cls==='pe'||cls==='re'){
+          cls==='pe'?tp++:tr++;
+          aH+='<div class="sum-item">'+modBdg(mod.id,d)+' <strong>'+mod.icon+' '+mod.nome+' — '+andar+'</strong><span>'+(d.obs||'')+'</span></div>';
+        }
+      });
+    });
+    if(bH||aH) html+='<div class="sum-sec"><div class="sum-sec-ttl">'+(cfg.icon||'🏢')+' '+bloco.nome+'</div>'+(bH?'<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--purple);margin-bottom:4px">SISTEMAS DO '+(cfg.blocoNome||'BLOCO').toUpperCase()+'</div>'+bH:'')+(aH?'<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--blue);margin:8px 0 4px">POR ANDAR</div>'+aH:'')+'</div>';
+  });
+  document.getElementById('sumSub').textContent = (cfg.label||'')+' · '+tp+' pendência(s) · '+tr+' reprovação(ões)';
+  document.getElementById('sumContent').innerHTML = html||'<div style="text-align:center;padding:28px;color:var(--text2)">✅ Nenhuma pendência registrada.</div>';
+}
+
+// ═══════════════════════════════════════════════
+// ENVIO SHEETS + EXPORT
+// ═══════════════════════════════════════════════
+async function enviar() {
+  const btn=document.getElementById('btnEnv');
+  btn.disabled=true; btn.textContent='⏳ Enviando...'; btn.style.background='#999';
+  const cfg=TIPOS[tipoCliente]||{};
+  const linhas=[];
+  estrutura.forEach((bloco,ti)=>{
+    (cfg.modsBloco||[]).forEach(mod=>{
+      const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
+      if(mod.id==='para_raio'){
+        [{k:'captacao',l:'Captação'},{k:'condutores',l:'Condutores'},{k:'caixas',l:'Caixas'},{k:'aterramento',l:'Aterramento'}].forEach(s=>{
+          const sub=d[s.k]; if(sub&&sub.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:s.l,status:sub.status.toUpperCase().replace('_',' '),obs:sub.obs||''});
+        });
+      } else if(d.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||''});
+    });
+    (bloco.andares||[]).forEach((andar,ai)=>{
+      (cfg.modsAndar||[]).forEach(mod=>{
+        const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
+        if(mod.id==='sinalizacao'){
+          [{k:'rota',l:'Rota de Fuga'},{k:'ext',l:'Extintores'},{k:'outros',l:'Outros'},{k:'geral',l:'Sinalização Geral'}].forEach(g=>{
+            const sub=d[g.k]; if(sub&&sub.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:g.l,status:sub.status.toUpperCase().replace('_',' '),obs:''});
+          });
+        } else if(d.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||''});
+      });
+    });
+  });
+  try {
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({os:gv('fCod'),data:fmtD(gv('fData')),cliente:gv('fCliente'),tecnicos:gv('fTec'),tipo:cfg.label||'',linhas})});
+    btn.textContent='✅ Enviado para o Sheets!'; btn.style.background='var(--green)'; btn.disabled=false;
+  } catch(err) {
+    btn.textContent='❌ Erro — tente novamente'; btn.style.background='var(--red)'; btn.disabled=false;
+  }
+}
+
+function exportar() {
+  const cfg=TIPOS[tipoCliente]||{};
+  const wb=XLSX.utils.book_new();
+  const rows=[['RELATÓRIO DE VISTORIA — BRASAS EXTINTORES'],[],['O.S.:',gv('fCod'),'DATA:',fmtD(gv('fData'))],['CLIENTE:',gv('fCliente'),'TÉCNICO(S):',gv('fTec')],['TIPO:',cfg.label||''],[],['BLOCO/TORRE','NÍVEL','MÓDULO','SUBSEÇÃO','STATUS','OBSERVAÇÕES']];
+  estrutura.forEach((bloco,ti)=>{
+    (cfg.modsBloco||[]).forEach(mod=>{
+      const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d||!d.status) return;
+      rows.push([bloco.nome,cfg.blocoNome||'Bloco',mod.nome,'—',d.status.toUpperCase().replace('_',' '),d.obs||'']);
+    });
+    (bloco.andares||[]).forEach((andar,ai)=>{
+      (cfg.modsAndar||[]).forEach(mod=>{
+        const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d||!d.status) return;
+        rows.push([bloco.nome,andar,mod.nome,'—',d.status.toUpperCase().replace('_',' '),d.obs||'']);
+      });
+    });
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[16,14,26,18,14,36].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,'Relatório'); XLSX.writeFile(wb,'Vistoria_'+gv('fCod')+'_'+gv('fData').replaceAll('-','')+'.xlsx');
+}
+
+// ═══════════════════════════════════════════════
+// AUTO-SAVE
+// ═══════════════════════════════════════════════
+function showToast() {
+  const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800);
+}
+function autoSave() {
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try { localStorage.setItem('brasas_v',JSON.stringify({tipoCliente,fCod:gv('fCod'),fData:gv('fData'),fCliente:gv('fCliente'),fCnpj:gv('fCnpj'),fTec:gv('fTec'),estrutura,dataTorre,dataAndar,tIdx,aIdx,nivel})); showToast(); } catch(e){}
+  },600);
+}
+function retomar() {
+  try {
+    const raw=localStorage.getItem('brasas_v'); if(!raw){alert('Nenhuma vistoria salva.');return;}
+    const s=JSON.parse(raw);
+    if(!confirm('Retomar vistoria?\nTipo: '+(TIPOS[s.tipoCliente]&&TIPOS[s.tipoCliente].label||'—')+'\nCliente: '+(s.fCliente||'—')+'\nO.S.: '+(s.fCod||'—'))) return;
+    document.getElementById('fCod').value=s.fCod||'';
+    document.getElementById('fData').value=s.fData||'';
+    document.getElementById('fCliente').value=s.fCliente||'';
+    document.getElementById('fCnpj').value=s.fCnpj||'';
+    document.getElementById('fTec').value=s.fTec||'';
+    tipoCliente=s.tipoCliente; estrutura=s.estrutura||[]; dataTorre=s.dataTorre||[]; dataAndar=s.dataAndar||[];
+    tIdx=s.tIdx||0; aIdx=s.aIdx||0; nivel=s.nivel||'torre';
+    if(tipoCliente) setTipo(tipoCliente);
+    renderEst();
+    buildDots(1); showSc(1); updateHdr(); renderVistoria();
+  } catch(e){alert('Erro ao retomar: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function fmtD(d){if(!d)return'—';const[y,m,dd]=d.split('-');return dd+'/'+m+'/'+y;}
+function showSc(i){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById('sc'+i).classList.add('on');window.scrollTo(0,0);}
+function buildDots(now){
+  document.getElementById('dots').innerHTML=Array.from({length:3},(_,i)=>'<div class="dot '+(i<now?'done':i===now?'now':'')+'" style="flex:'+(i===now?3:1)+'"></div>').join('');
+  document.getElementById('progFill').style.width=Math.round((now/2)*100)+'%';
+}
+function updateHdr(){const cli=gv('fCliente'),cod=gv('fCod');document.getElementById('hSub').textContent=cli?cli+' · O.S. '+cod:'O.S. '+cod;}
+function novaVistoria(){
+  if(!confirm('Iniciar nova vistoria? Os dados serão perdidos.')) return;
+  tipoCliente=null; estrutura=[]; dataTorre=[]; dataAndar=[];
+  ['fCod','fData','fCliente','fCnpj','fTec'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('estList').innerHTML='';
+  document.getElementById('cardEst').style.display='none';
+  ['condominio','empresa','galpao'].forEach(t=>{const el=document.getElementById('tc-'+t);if(el)el.classList.remove('sel');});
+  localStorage.removeItem('brasas_v');
+  buildDots(0); showSc(0);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('fData').value=new Date().toISOString().split('T')[0];
+  buildDots(0);
+});
+</script>
+</body>
+</html>

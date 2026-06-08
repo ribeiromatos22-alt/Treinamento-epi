@@ -310,10 +310,10 @@ const SIN_ROTA=['SAÍDA','ESC. DESCE DIREITA','ESC. DESCE ESQ.','SAÍDA SETA P/ 
 const SIN_EXT =['AP','PQS 2KG','PQS 4KG','PQS 6KG','PQS 8KG','PQS 12KG','PQS ABC 4KG','PQS ABC 6KG','CO2 6K','CO2 4K','PO QUIMICO BC','PQS ABC'];
 const SIN_OUT =['PROIBIDO FUMAR','INFLAMAVEL','RISCO CHOQ.ELETRICO','TRIPE AP/CO2/P8/P12','TRIPE PQS 4KG/6KG','SUPORTE PAREDE','ADESIVO INCENDIO','FITA ANTIDERRAPANTE','ADESIVO GÁS','MANGUEIRAS'];
 const SIN_GER =['PCF','ALARME SONORO','ALARME INCENDIO','HIDRANTE','CENTRAL DE GAS','CASA DE MAQUINA','CASA DE BOMBA','CO2'];
-const PR_CAPT =['Kit Saty','Captor Franklin','Mastro 1½"','Mastro 2"','Base mastro','Suporte sinaleiro','Sinaleiro completo','Isolador 1½"','Isolador 2"','Curva 90° alumínio'];
-const PR_COND =['Mts cabo cobre 35mm','Mts cabo cobre 50mm','Cabo cordoalha (mts)','Mts fita alumínio','Eletroduto','Conector de canto','Conector KS','Conector emenda','Esticador','Clipe','Presilha latão','Grampo terra duplo'];
-const PR_CX   =['Botinha/Sapatinho','Tampa aterramento','Haste aterramento','Parafuso bucha alumínio','Parafuso autobrocante','Parafuso c/ porca e arruela','Isolador de canto','PU p/ vedação'];
-const PR_AT   =['Grampo de aterramento','Cabo cobre 50mm (malha)','Haste cobre','Conector KS 50mm','DPS (Dispositivo de Proteção)'];
+const PR_CAPT =[{n:'Kit Saty',u:'qt'},{n:'Captor Franklin',u:'qt'},{n:'Mastro 1½"',u:'qt'},{n:'Mastro 2"',u:'qt'},{n:'Base mastro',u:'qt'},{n:'Suporte sinaleiro',u:'qt'},{n:'Sinaleiro completo',u:'qt'},{n:'Isolador 1½"',u:'qt'},{n:'Isolador 2"',u:'qt'},{n:'Curva 90° alumínio',u:'qt'}];
+const PR_COND =[{n:'Cabo cobre 35mm',u:'mts'},{n:'Cabo cobre 50mm',u:'mts'},{n:'Cabo cordoalha',u:'mts'},{n:'Fita alumínio',u:'mts'},{n:'Eletroduto',u:'mts'},{n:'Conector de canto',u:'qt'},{n:'Conector KS',u:'qt'},{n:'Conector emenda',u:'qt'},{n:'Esticador',u:'qt'},{n:'Clipe',u:'qt'},{n:'Presilha latão',u:'qt'},{n:'Grampo terra duplo',u:'qt'}];
+const PR_CX   =[{n:'Botinha/Sapatinho',u:'qt'},{n:'Tampa aterramento',u:'qt'},{n:'Haste aterramento',u:'qt'},{n:'Parafuso bucha alumínio',u:'qt'},{n:'Parafuso autobrocante',u:'qt'},{n:'Parafuso c/ porca e arruela',u:'qt'},{n:'Isolador de canto',u:'qt'},{n:'PU p/ vedação',u:'qt'}];
+const PR_AT   =[{n:'Grampo de aterramento',u:'qt'},{n:'Cabo cobre 50mm (malha)',u:'mts'},{n:'Haste cobre',u:'qt'},{n:'Conector KS 50mm',u:'qt'},{n:'DPS (Dispositivo de Proteção)',u:'qt'}];
 
 // ═══════════════════════════════════════════════
 // ESTADO
@@ -619,8 +619,12 @@ function sinTbl(arr,items,pfx){
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Item</th><th style="width:44px">QT</th><th style="width:50px">Manut</th><th style="width:50px">Novo</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function matTbl(arr,mat,pfx){
-  let rows=arr.map((l,i)=>'<tr><td>'+l+'</td><td><input type="text" id="'+pfx+'_qt_'+i+'" value="'+(mat[i].qt||'')+'" placeholder="0" oninput="autoSave()"></td></tr>').join('');
-  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th style="width:64px">QT</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  let rows=arr.map((item,i)=>{
+    const label = typeof item==='string' ? item : item.n;
+    const unit  = typeof item==='string' ? 'QT' : (item.u==='mts' ? 'Mts' : 'QT');
+    return '<tr><td>'+label+'</td><td style="font-size:10px;color:var(--text3);text-align:center">'+unit+'</td><td><input type="text" id="'+pfx+'_qt_'+i+'" value="'+(mat[i].qt||'')+'" placeholder="0" oninput="autoSave()"></td></tr>';
+  }).join('');
+  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th style="width:36px">Un.</th><th style="width:56px">Valor</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 function mkSubsec(modId,subId,title,diagHtml,matHtml,d) {
@@ -1042,6 +1046,55 @@ function buildResumo() {
 // ═══════════════════════════════════════════════
 // ENVIO SHEETS + EXPORT
 // ═══════════════════════════════════════════════
+// Helper: extrair detalhes de materiais de um módulo
+function getDetalhes(modId, d) {
+  if(!d) return '';
+  const lines=[];
+  if(modId==='para_raio') {
+    const subs=[{k:'captacao',l:'Captação',arr:PR_CAPT},{k:'condutores',l:'Condutores',arr:PR_COND},{k:'caixas',l:'Caixas',arr:PR_CX},{k:'aterramento',l:'Aterramento',arr:PR_AT}];
+    subs.forEach(s=>{
+      const sub=d[s.k]; if(!sub) return;
+      if(sub.antenas) lines.push(s.l+': Antenas='+sub.antenas+' Aterradas='+sub.ant_at);
+      if(sub.tampas)  lines.push(s.l+': Tampas='+sub.tampas+' Aterradas='+sub.tap_at);
+      if(sub.escada)  lines.push(s.l+': Escada marinheiro='+sub.escada+' Aterrada='+sub.esc_at);
+      if(sub.medicao) lines.push(s.l+': Medição Ôhmica='+sub.medicao);
+      if(sub.cond_at) lines.push(s.l+': Ar cond. aterrado='+sub.cond_at);
+      (sub.mat||[]).forEach((m,i)=>{
+        if(m.qt) {const item=s.arr[i]; const nome=typeof item==='string'?item:item.n; const un=typeof item==='string'?'qt':item.u; lines.push(s.l+': '+nome+'='+m.qt+(un==='mts'?' mts':' un'));}
+      });
+    });
+  }
+  if(modId==='sinalizacao') {
+    [{k:'rota',l:'Rota de Fuga',arr:SIN_ROTA},{k:'ext',l:'Extintores',arr:SIN_EXT},{k:'outros',l:'Outros',arr:SIN_OUT},{k:'geral',l:'Sinalização Geral',arr:SIN_GER}].forEach(g=>{
+      const sub=d[g.k]; if(!sub) return;
+      (sub.items||[]).forEach((item,i)=>{
+        if(item.qt||item.manut||item.novo) lines.push(g.l+': '+g.arr[i]+' → QT='+item.qt+' MANUT='+item.manut+' NOVO='+item.novo);
+      });
+    });
+  }
+  if(modId==='shp') {
+    (d.esguichos||[]).forEach((e,i)=>{if(e.modelo||e.qt)lines.push('Esguicho '+(i+1)+': '+e.modelo+' QT='+e.qt);});
+    (d.adaptadores||[]).forEach((a,i)=>{if(a.modelo||a.qt)lines.push('Adaptador '+(i+1)+': '+a.modelo+' QT='+a.qt);});
+    (d.tampoes||[]).forEach((t,i)=>{if(t.modelo||t.qt)lines.push('Tampão '+(i+1)+': '+t.modelo+' QT='+t.qt);});
+    if(d.chave) lines.push('Chave QT='+d.chave);
+    (d.mangueiras||[]).forEach((m,i)=>{if(m.modelo||m.mts||m.tipo)lines.push('Mangueira '+(i+1)+': '+m.modelo+' '+m.mts+'m Tipo '+m.tipo);});
+    (d.registros||[]).forEach((r,i)=>{if(r.modelo||r.qt)lines.push('Registro '+(i+1)+': '+r.modelo+'° QT='+r.qt);});
+    if(d.pbrita) lines.push('Pintura+brita='+d.pbrita);
+    if(d.tpres)  lines.push('Tanque pressão QT='+d.tpres);
+    if(d.ptub)   lines.push('Pintura tubulação QT='+d.ptub);
+    if(d.pcon)   lines.push('Pintura conexões QT='+d.pcon);
+    if(d.tpress) lines.push('Teste pressão='+d.tpress);
+  }
+  if(modId==='pcf') {
+    (d.portas||[]).forEach((p,i)=>{
+      if(p.local||p.altura||p.problema) lines.push('Porta '+(i+1)+': Local='+p.local+' Tam='+p.altura+'x'+p.largura+'m'+(p.dupla==='S'?' DUPLA':'')+(p.antipanico==='S'?' ANTIPÂNICO':'')+' '+p.problema);
+    });
+    if(d.lubrificacao) lines.push('Lubrificação: '+d.lubrificacao);
+    if(d.alinhamento) lines.push('Alinhamento: '+d.alinhamento);
+  }
+  return lines.join(' | ');
+}
+
 async function enviar() {
   const btn=document.getElementById('btnEnv');
   btn.disabled=true; btn.textContent='⏳ Enviando...'; btn.style.background='#999';
@@ -1050,20 +1103,12 @@ async function enviar() {
   estrutura.forEach((bloco,ti)=>{
     (cfg.modsBloco||[]).forEach(mod=>{
       const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
-      if(mod.id==='para_raio'){
-        [{k:'captacao',l:'Captação'},{k:'condutores',l:'Condutores'},{k:'caixas',l:'Caixas'},{k:'aterramento',l:'Aterramento'}].forEach(s=>{
-          const sub=d[s.k]; if(sub&&sub.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:s.l,status:sub.status.toUpperCase().replace('_',' '),obs:sub.obs||''});
-        });
-      } else if(d.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||''});
+      if(d.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
     });
     (bloco.andares||[]).forEach((andar,ai)=>{
       (cfg.modsAndar||[]).forEach(mod=>{
         const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
-        if(mod.id==='sinalizacao'){
-          [{k:'rota',l:'Rota de Fuga'},{k:'ext',l:'Extintores'},{k:'outros',l:'Outros'},{k:'geral',l:'Sinalização Geral'}].forEach(g=>{
-            const sub=d[g.k]; if(sub&&sub.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:g.l,status:sub.status.toUpperCase().replace('_',' '),obs:''});
-          });
-        } else if(d.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||''});
+        if(d.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
       });
     });
   });
@@ -1078,21 +1123,42 @@ async function enviar() {
 function exportar() {
   const cfg=TIPOS[tipoCliente]||{};
   const wb=XLSX.utils.book_new();
-  const rows=[['RELATÓRIO DE VISTORIA — BRASAS EXTINTORES'],[],['O.S.:',gv('fCod'),'DATA:',fmtD(gv('fData'))],['CLIENTE:',gv('fCliente'),'TÉCNICO(S):',gv('fTec')],['TIPO:',cfg.label||''],[],['BLOCO/TORRE','NÍVEL','MÓDULO','SUBSEÇÃO','STATUS','OBSERVAÇÕES']];
+
+  // ABA 1: Relatório Geral
+  const rows=[['RELATÓRIO DE VISTORIA — BRASAS EXTINTORES'],[],['O.S.:',gv('fCod'),'DATA:',fmtD(gv('fData'))],['CLIENTE:',gv('fCliente'),'TÉCNICO(S):',gv('fTec')],['TIPO:',cfg.label||''],[],['BLOCO/TORRE','NÍVEL','MÓDULO','STATUS','OBSERVAÇÕES','DETALHAMENTO DE MATERIAIS / PEÇAS']];
   estrutura.forEach((bloco,ti)=>{
     (cfg.modsBloco||[]).forEach(mod=>{
       const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d||!d.status) return;
-      rows.push([bloco.nome,cfg.blocoNome||'Bloco',mod.nome,'—',d.status.toUpperCase().replace('_',' '),d.obs||'']);
+      rows.push([bloco.nome,cfg.blocoNome||'Bloco',mod.nome,d.status.toUpperCase().replace('_',' '),d.obs||'',getDetalhes(mod.id,d)]);
     });
     (bloco.andares||[]).forEach((andar,ai)=>{
       (cfg.modsAndar||[]).forEach(mod=>{
         const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d||!d.status) return;
-        rows.push([bloco.nome,andar,mod.nome,'—',d.status.toUpperCase().replace('_',' '),d.obs||'']);
+        rows.push([bloco.nome,andar,mod.nome,d.status.toUpperCase().replace('_',' '),d.obs||'',getDetalhes(mod.id,d)]);
       });
     });
   });
-  const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[16,14,26,18,14,36].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,'Relatório'); XLSX.writeFile(wb,'Vistoria_'+gv('fCod')+'_'+gv('fData').replaceAll('-','')+'.xlsx');
+  const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[16,14,26,14,30,60].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,'Relatório Geral');
+
+  // ABA 2: Pendências para Orçamento (só pend/reprovado com detalhes)
+  const r2=[['PENDÊNCIAS E REPROVAÇÕES — PARA ORÇAMENTO'],[],['O.S.:',gv('fCod'),'CLIENTE:',gv('fCliente')],[],['BLOCO/TORRE','NÍVEL','MÓDULO','STATUS','DETALHAMENTO']];
+  estrutura.forEach((bloco,ti)=>{
+    (cfg.modsBloco||[]).forEach(mod=>{
+      const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
+      if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,cfg.blocoNome||'Bloco',mod.nome,d.status.toUpperCase(),getDetalhes(mod.id,d)]);
+    });
+    (bloco.andares||[]).forEach((andar,ai)=>{
+      (cfg.modsAndar||[]).forEach(mod=>{
+        const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
+        if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,andar,mod.nome,d.status.toUpperCase(),getDetalhes(mod.id,d)]);
+      });
+    });
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(r2); ws2['!cols']=[16,14,26,14,70].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws2,'Pendências - Orçamento');
+
+  XLSX.writeFile(wb,'Vistoria_'+gv('fCod')+'_'+(gv('fData')||'').replaceAll('-','')+'.xlsx');
 }
 
 // ═══════════════════════════════════════════════

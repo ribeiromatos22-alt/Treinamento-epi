@@ -1195,6 +1195,198 @@ function getDetalhes(modId, d) {
   return lines.join(' | ');
 }
 
+// ═══════════════════════════════════════════════
+// CONSOLIDAR PENDÊNCIAS PARA ORÇAMENTO
+// ═══════════════════════════════════════════════
+function buildConsolidado(cfg) {
+  const materiais=[];  // {cat, item, qt, un, locais}
+  const shp=[];        // {tipo, modelo, qt, det, locais}
+  const sinalizacoes=[];// {grupo, item, qt, manut, novo}
+  const portas=[];     // {local, tam, dupla, anti, prob}
+  const servicos=[];   // {modulo, det, locais}
+
+  // Helpers para agregar
+  const matMap={};  // key=cat|item => {qt, un, locaisSet}
+  const sinMap={};  // key=grupo|item => {qt, manut, novo}
+  const shpMap={};  // key=tipo|modelo => {qt, det, locaisSet}
+
+  function addMat(cat,item,qt,un,local) {
+    if(!qt || qt==='0') return;
+    const k=cat+'|'+item;
+    if(!matMap[k]) matMap[k]={cat,item,qt:0,un,locais:new Set()};
+    matMap[k].qt += parseFloat(qt)||0;
+    matMap[k].locais.add(local);
+  }
+  function addSin(grupo,item,qt,manut,novo) {
+    if(!qt&&!manut&&!novo) return;
+    const k=grupo+'|'+item;
+    if(!sinMap[k]) sinMap[k]={grupo,item,qt:0,manut:0,novo:0};
+    sinMap[k].qt    += parseFloat(qt)||0;
+    sinMap[k].manut += parseFloat(manut)||0;
+    sinMap[k].novo  += parseFloat(novo)||0;
+  }
+  function addShp(tipo,modelo,qt,det,local) {
+    if(!modelo&&!qt) return;
+    const k=tipo+'|'+modelo+'|'+det;
+    if(!shpMap[k]) shpMap[k]={tipo,modelo,qt:0,det:det||'',locais:new Set()};
+    shpMap[k].qt += parseFloat(qt)||0;
+    shpMap[k].locais.add(local);
+  }
+
+  // Iterar todos os dados pendentes
+  function processarMod(modId, d, local) {
+    if(!d || (d.status!=='pendente' && d.status!=='reprovado')) return;
+
+    if(modId==='para_raio') {
+      [{k:'captacao',l:'Captação',arr:PR_CAPT},{k:'condutores',l:'Condutores',arr:PR_COND},{k:'caixas',l:'Caixas Inspeção',arr:PR_CX},{k:'aterramento',l:'Aterramento',arr:PR_AT}].forEach(s=>{
+        const sub=d[s.k]; if(!sub) return;
+        (sub.mat||[]).forEach((m,i)=>{
+          if(m.qt && m.qt!=='0') {
+            const item=s.arr[i]; const nome=typeof item==='string'?item:item.n; const un=typeof item==='string'?'un':item.u;
+            addMat('Para-Raio / '+s.l, nome, m.qt, un==='mts'?'metros':'un', local);
+          }
+        });
+      });
+    }
+
+    if(modId==='sinalizacao') {
+      [{k:'rota',l:'Rota de Fuga',arr:SIN_ROTA},{k:'ext',l:'Extintores',arr:SIN_EXT},{k:'outros',l:'Outros',arr:SIN_OUT},{k:'geral',l:'Sinalização Geral',arr:SIN_GER}].forEach(g=>{
+        const sub=d[g.k]; if(!sub) return;
+        (sub.items||[]).forEach((item,i)=>{
+          addSin(g.l, g.arr[i], item.qt, item.manut, item.novo);
+        });
+      });
+    }
+
+    if(modId==='shp') {
+      (d.esguichos||[]).forEach(e   => addShp('Esguicho',  e.modelo?e.modelo+'"':'', e.qt, '', local));
+      (d.adaptadores||[]).forEach(a => addShp('Adaptador',  a.modelo?a.modelo+'"':'', a.qt, '', local));
+      (d.tampoes||[]).forEach(t     => addShp('Tampão',     t.modelo?t.modelo+'"':'', t.qt, '', local));
+      (d.mangueiras||[]).forEach(m  => addShp('Mangueira',  m.modelo?m.modelo+'"':'', 1, m.mts+'m Tipo '+m.tipo, local));
+      (d.registros||[]).forEach(r   => addShp('Registro',   r.modelo?r.modelo+'°':'', r.qt, '', local));
+      if(d.chave && d.chave!=='0')    addShp('Chave', '', d.chave, '', local);
+      // Serviços SHP
+      const svcSHP=[];
+      if(d.pbrita==='S') svcSHP.push('Pintura+brita');
+      if(d.tpres && d.tpres!=='0') svcSHP.push('Tanque pressão QT='+d.tpres);
+      if(d.ptub && d.ptub!=='0') svcSHP.push('Pintura tubulação QT='+d.ptub);
+      if(d.pcon && d.pcon!=='0') svcSHP.push('Pintura conexões QT='+d.pcon);
+      if(d.tpress==='S') svcSHP.push('Teste pressão e vazão');
+      if(svcSHP.length) servicos.push({modulo:'SHP', det:svcSHP.join(', '), locais:local});
+    }
+
+    if(modId==='pcf') {
+      (d.portas||[]).forEach(p => {
+        if(p.local||p.altura||p.problema) {
+          portas.push({
+            local: local+(p.local?' — '+p.local:''),
+            tam: (p.altura||'?')+'×'+(p.largura||'?')+'m',
+            dupla: p.dupla==='S'?'Sim':'Não',
+            anti: p.antipanico==='S'?'Sim':'Não',
+            prob: p.problema||''
+          });
+        }
+      });
+      const svcPCF=[];
+      if(d.lubrificacao) svcPCF.push('Lubrificação: '+d.lubrificacao);
+      if(d.alinhamento) svcPCF.push('Alinhamento: '+d.alinhamento);
+      if(svcPCF.length) servicos.push({modulo:'PCF', det:svcPCF.join(', '), locais:local});
+    }
+
+    if(modId==='iluminacao') {
+      const svc=[];
+      if(d.queimadas) svc.push('Queimadas: '+d.queimadas);
+      if(d.novas)     svc.push('Novas: '+d.novas);
+      if(d.fiacao)    svc.push('Fiação: '+d.fiacao);
+      if(d.dif)       svc.push('Dificuldade: '+d.dif);
+      if(svc.length) servicos.push({modulo:'Iluminação', det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='bomba') {
+      const svc=[];
+      if(d.cv)           svc.push('Bomba '+d.cv);
+      if(d.tub)          svc.push('Tubulação '+d.tub+'"');
+      if(d.manometro==='S') svc.push('Trocar manômetro');
+      if(d.pressostato==='S') svc.push('Trocar pressostato'+(d.alt?' ('+d.alt+')':''));
+      if(d.quadro_troca==='S') svc.push('Trocar quadro comando');
+      if(svc.length) servicos.push({modulo:'Bomba de Incêndio', det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='alarme') {
+      const svc=[];
+      if(d.bat_troca && d.bat_troca!=='0') svc.push('Trocar '+d.bat_troca+' bateria(s)');
+      if(d.sir_troca && d.sir_troca!=='0') svc.push('Trocar '+d.sir_troca+' sirene(s)');
+      if(d.central_nova==='S') svc.push('Central nova');
+      if(svc.length) servicos.push({modulo:'Alarme'+(d.marca?' ('+d.marca+')':''), det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='botoeiras') {
+      const svc=[];
+      if(d.qt_troca && d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' botoeira(s)'+(d.local_troca?' em '+d.local_troca:''));
+      if(d.qt_novas && d.qt_novas!=='0') svc.push(d.qt_novas+' nova(s)'+(d.local_novas?' em '+d.local_novas:''));
+      if(svc.length) servicos.push({modulo:'Botoeiras', det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='detector') {
+      const svc=[];
+      if(d.qt_troca && d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' detector(es)'+(d.local_troca?' em '+d.local_troca:''));
+      if(d.qt_novas && d.qt_novas!=='0') svc.push(d.qt_novas+' novo(s)'+(d.local_novas?' em '+d.local_novas:''));
+      if(svc.length) servicos.push({modulo:'Detector de Fumaça', det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='sprinkler') {
+      const svc=[];
+      if(d.bico_qt && d.bico_qt!=='0') svc.push(d.bico_qt+' bico(s)'+(d.bico_cor?' cor '+d.bico_cor:''));
+      if(d.gaiola_qt && d.gaiola_qt!=='0') svc.push(d.gaiola_qt+' gaiola(s)');
+      if(d.pintura==='S') svc.push('Pintura tubulação');
+      if(d.teste==='S') svc.push('Teste rede'+(d.horas?' '+d.horas:''));
+      if(svc.length) servicos.push({modulo:'Sprinkler', det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='gas') {
+      const svc=[];
+      if(d.clk_troca && d.clk_troca!=='0') svc.push('Trocar '+d.clk_troca+' click/regulador');
+      if(d.con_mang && d.con_mang!=='0')   svc.push('Trocar '+d.con_mang+' conexão mangueira');
+      if(d.med_mts && d.med_mts!=='0')     svc.push('Trocar medidores '+d.med_mts+' mts');
+      if(d.pint_qt && d.pint_qt!=='0')     svc.push('Pintura '+d.pint_qt+' tubulação'+(d.pint_mts?' ('+d.pint_mts+' mts)':''));
+      if(d.estanque==='S')                 svc.push('Teste estanqueidade');
+      if(svc.length) servicos.push({modulo:'Gás'+(d.tipo?' '+d.tipo:''), det:svc.join(', '), locais:local});
+    }
+
+    if(modId==='escada') {
+      const svc=[];
+      if(d.correia==='RUIM') svc.push('Trocar correia');
+      if(d.lubrificacao==='N') svc.push('Necessita lubrificação');
+      if(d.botao==='NAO') svc.push('Botão emergência não operante');
+      if(d.grande==='NAO') svc.push('Grade não presente');
+      if(svc.length) servicos.push({modulo:'Escada Pressurizada'+(d.motor?' ('+d.motor+')':''), det:svc.join(', '), locais:local});
+    }
+  }
+
+  // Percorrer tudo
+  estrutura.forEach((bloco,ti)=>{
+    const blocoLocal = bloco.nome;
+    (cfg.modsBloco||[]).forEach(mod=>{
+      const d=dataTorre[ti]&&dataTorre[ti][mod.id];
+      processarMod(mod.id, d, blocoLocal);
+    });
+    (bloco.andares||[]).forEach((andar,ai)=>{
+      const andarLocal = bloco.nome+' / '+andar;
+      (cfg.modsAndar||[]).forEach(mod=>{
+        const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id];
+        processarMod(mod.id, d, andarLocal);
+      });
+    });
+  });
+
+  // Converter maps para arrays
+  Object.values(matMap).forEach(m => materiais.push({cat:m.cat, item:m.item, qt:m.qt, un:m.un, locais:Array.from(m.locais).join(', ')}));
+  Object.values(sinMap).forEach(m => {if(m.qt||m.manut||m.novo) sinalizacoes.push({grupo:m.grupo, item:m.item, qt:m.qt||'', manut:m.manut||'', novo:m.novo||''});});
+  Object.values(shpMap).forEach(m => shp.push({tipo:m.tipo, modelo:m.modelo, qt:m.qt, det:m.det, locais:Array.from(m.locais).join(', ')}));
+
+  return {materiais, shp, sinalizacoes, portas, servicos};
+}
+
 async function enviar() {
   const btn=document.getElementById('btnEnv');
   btn.disabled=true; btn.textContent='⏳ Enviando...'; btn.style.background='#999';
@@ -1203,17 +1395,26 @@ async function enviar() {
   estrutura.forEach((bloco,ti)=>{
     (cfg.modsBloco||[]).forEach(mod=>{
       const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
-      if(d.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
+      if(d.status) linhas.push({torre:bloco.nome,nivel:cfg.blocoNome||'Bloco',modulo:mod.nome,status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
     });
     (bloco.andares||[]).forEach((andar,ai)=>{
       (cfg.modsAndar||[]).forEach(mod=>{
         const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
-        if(d.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,subsecao:'—',status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
+        if(d.status) linhas.push({torre:bloco.nome,nivel:andar,modulo:mod.nome,status:d.status.toUpperCase().replace('_',' '),obs:d.obs||'',detalhes:getDetalhes(mod.id,d)});
       });
     });
   });
+  // Consolidado para aba de checklist
+  const conso = buildConsolidado(cfg);
+  const checklistLinhas = [];
+  conso.materiais.forEach(m => checklistLinhas.push({cat:m.cat, item:m.item, qt:m.qt, un:m.un, locais:m.locais}));
+  conso.shp.forEach(m => checklistLinhas.push({cat:'SHP — '+m.tipo, item:m.modelo, qt:m.qt, un:m.det||'un', locais:m.locais}));
+  conso.sinalizacoes.forEach(m => checklistLinhas.push({cat:'Sinalização — '+m.grupo, item:m.item, qt:m.novo||m.manut||m.qt, un:'un (MANUT='+m.manut+' NOVO='+m.novo+')', locais:''}));
+  conso.portas.forEach(p => checklistLinhas.push({cat:'PCF', item:p.local+' '+p.tam+(p.dupla==='Sim'?' DUPLA':'')+(p.anti==='Sim'?' ANTIPÂNICO':''), qt:1, un:'porta', locais:p.prob}));
+  conso.servicos.forEach(s => checklistLinhas.push({cat:s.modulo, item:s.det, qt:1, un:'serviço', locais:s.locais}));
+
   try {
-    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({os:gv('fCod'),data:fmtD(gv('fData')),cliente:gv('fCliente'),tecnicos:gv('fTec'),tipo:cfg.label||'',linhas})});
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({os:gv('fCod'),data:fmtD(gv('fData')),cliente:gv('fCliente'),tecnicos:gv('fTec'),tipo:cfg.label||'',linhas,checklist:checklistLinhas})});
     btn.textContent='✅ Enviado para o Sheets!'; btn.style.background='var(--green)'; btn.disabled=false;
   } catch(err) {
     btn.textContent='❌ Erro — tente novamente'; btn.style.background='var(--red)'; btn.disabled=false;
@@ -1241,22 +1442,72 @@ function exportar() {
   const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[16,14,26,14,30,60].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,'Relatório Geral');
 
-  // ABA 2: Pendências para Orçamento (só pend/reprovado com detalhes)
-  const r2=[['PENDÊNCIAS E REPROVAÇÕES — PARA ORÇAMENTO'],[],['O.S.:',gv('fCod'),'CLIENTE:',gv('fCliente')],[],['BLOCO/TORRE','NÍVEL','MÓDULO','STATUS','DETALHAMENTO']];
+  // ABA 2: CHECKLIST CONSOLIDADO PARA ORÇAMENTO
+  const r2=[['CHECKLIST PARA ORÇAMENTO — BRASAS EXTINTORES'],[],
+    ['O.S.:',gv('fCod'),'DATA:',fmtD(gv('fData'))],
+    ['CLIENTE:',gv('fCliente'),'TÉCNICO(S):',gv('fTec')],
+    ['TIPO:',cfg.label||''],[]];
+
+  // Consolidar TUDO que é pendente/reprovado
+  const conso = buildConsolidado(cfg);
+
+  // Seção 1: Resumo de sistemas pendentes
+  r2.push(['SISTEMAS COM PENDÊNCIA'],['BLOCO/TORRE','NÍVEL','MÓDULO','STATUS','OBS']);
   estrutura.forEach((bloco,ti)=>{
     (cfg.modsBloco||[]).forEach(mod=>{
       const d=dataTorre[ti]&&dataTorre[ti][mod.id]; if(!d) return;
-      if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,cfg.blocoNome||'Bloco',mod.nome,d.status.toUpperCase(),getDetalhes(mod.id,d)]);
+      if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,cfg.blocoNome,mod.nome,d.status.toUpperCase(),d.obs||'']);
     });
     (bloco.andares||[]).forEach((andar,ai)=>{
       (cfg.modsAndar||[]).forEach(mod=>{
         const d=dataAndar[ti]&&dataAndar[ti][ai]&&dataAndar[ti][ai][mod.id]; if(!d) return;
-        if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,andar,mod.nome,d.status.toUpperCase(),getDetalhes(mod.id,d)]);
+        if(d.status==='pendente'||d.status==='reprovado') r2.push([bloco.nome,andar,mod.nome,d.status.toUpperCase(),d.obs||'']);
       });
     });
   });
-  const ws2=XLSX.utils.aoa_to_sheet(r2); ws2['!cols']=[16,14,26,14,70].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws2,'Pendências - Orçamento');
+
+  // Seção 2: Materiais consolidados
+  r2.push([],[]);
+  r2.push(['MATERIAIS E PEÇAS — QUANTIDADES TOTAIS']);
+  r2.push(['CATEGORIA','ITEM','QT','UNIDADE','LOCAIS']);
+  conso.materiais.forEach(m=>r2.push([m.cat,m.item,m.qt,m.un,m.locais]));
+  if(!conso.materiais.length) r2.push(['','Nenhum material listado','','','']);
+
+  // Seção 3: Equipamentos SHP consolidados
+  if(conso.shp.length) {
+    r2.push([],[]);
+    r2.push(['EQUIPAMENTOS SHP — CONSOLIDADO']);
+    r2.push(['TIPO','MODELO','QT/MTS','DETALHE','LOCAIS']);
+    conso.shp.forEach(m=>r2.push([m.tipo,m.modelo,m.qt,m.det,m.locais]));
+  }
+
+  // Seção 4: Sinalizações consolidadas
+  if(conso.sinalizacoes.length) {
+    r2.push([],[]);
+    r2.push(['SINALIZAÇÕES — CONSOLIDADO']);
+    r2.push(['GRUPO','ITEM','QT EXISTENTE','MANUTENÇÃO','NOVO']);
+    conso.sinalizacoes.forEach(m=>r2.push([m.grupo,m.item,m.qt,m.manut,m.novo]));
+  }
+
+  // Seção 5: Portas Corta-Fogo consolidadas
+  if(conso.portas.length) {
+    r2.push([],[]);
+    r2.push(['PORTAS CORTA-FOGO — CONSOLIDADO']);
+    r2.push(['LOCAL','TAMANHO (AxL)','DUPLA','ANTIPÂNICO','PROBLEMA']);
+    conso.portas.forEach(p=>r2.push([p.local,p.tam,p.dupla,p.anti,p.prob]));
+  }
+
+  // Seção 6: Serviços diversos
+  if(conso.servicos.length) {
+    r2.push([],[]);
+    r2.push(['SERVIÇOS E OBSERVAÇÕES']);
+    r2.push(['MÓDULO','DETALHE','LOCAIS']);
+    conso.servicos.forEach(s=>r2.push([s.modulo,s.det,s.locais]));
+  }
+
+  const ws2=XLSX.utils.aoa_to_sheet(r2);
+  ws2['!cols']=[20,28,12,10,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws2,'Checklist Orçamento');
 
   XLSX.writeFile(wb,'Vistoria_'+gv('fCod')+'_'+(gv('fData')||'').replaceAll('-','')+'.xlsx');
 }

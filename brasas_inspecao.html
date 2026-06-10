@@ -1236,14 +1236,16 @@ function buildConsolidado(cfg) {
   // Iterar todos os dados pendentes
   function processarMod(modId, d, local) {
     if(!d || (d.status!=='pendente' && d.status!=='reprovado')) return;
+    let adicionou = false;
 
     if(modId==='para_raio') {
       [{k:'captacao',l:'Captação',arr:PR_CAPT},{k:'condutores',l:'Condutores',arr:PR_COND},{k:'caixas',l:'Caixas Inspeção',arr:PR_CX},{k:'aterramento',l:'Aterramento',arr:PR_AT}].forEach(s=>{
         const sub=d[s.k]; if(!sub) return;
         (sub.mat||[]).forEach((m,i)=>{
-          if(m.qt && m.qt!=='0') {
+          if(m.qt && m.qt!=='0' && m.qt!=='') {
             const item=s.arr[i]; const nome=typeof item==='string'?item:item.n; const un=typeof item==='string'?'un':item.u;
             addMat('Para-Raio / '+s.l, nome, m.qt, un==='mts'?'metros':'un', local);
+            adicionou=true;
           }
         });
       });
@@ -1253,104 +1255,100 @@ function buildConsolidado(cfg) {
       [{k:'rota',l:'Rota de Fuga',arr:SIN_ROTA},{k:'ext',l:'Extintores',arr:SIN_EXT},{k:'outros',l:'Outros',arr:SIN_OUT},{k:'geral',l:'Sinalização Geral',arr:SIN_GER}].forEach(g=>{
         const sub=d[g.k]; if(!sub) return;
         (sub.items||[]).forEach((item,i)=>{
-          addSin(g.l, g.arr[i], item.qt, item.manut, item.novo);
+          if(item.manut||item.novo) { addSin(g.l, g.arr[i], item.qt, item.manut, item.novo); adicionou=true; }
         });
       });
     }
 
     if(modId==='shp') {
-      (d.esguichos||[]).forEach(e   => addShp('Esguicho',  e.modelo?e.modelo+'"':'', e.qt, '', local));
-      (d.adaptadores||[]).forEach(a => addShp('Adaptador',  a.modelo?a.modelo+'"':'', a.qt, '', local));
-      (d.tampoes||[]).forEach(t     => addShp('Tampão',     t.modelo?t.modelo+'"':'', t.qt, '', local));
-      (d.mangueiras||[]).forEach(m  => addShp('Mangueira',  m.modelo?m.modelo+'"':'', 1, m.mts+'m Tipo '+m.tipo, local));
-      (d.registros||[]).forEach(r   => addShp('Registro',   r.modelo?r.modelo+'°':'', r.qt, '', local));
-      if(d.chave && d.chave!=='0')    addShp('Chave', '', d.chave, '', local);
-      // Serviços SHP
-      const svcSHP=[];
-      if(d.pbrita==='S') svcSHP.push('Pintura+brita');
-      if(d.tpres && d.tpres!=='0') svcSHP.push('Tanque pressão QT='+d.tpres);
-      if(d.ptub && d.ptub!=='0') svcSHP.push('Pintura tubulação QT='+d.ptub);
-      if(d.pcon && d.pcon!=='0') svcSHP.push('Pintura conexões QT='+d.pcon);
-      if(d.tpress==='S') svcSHP.push('Teste pressão e vazão');
-      if(svcSHP.length) servicos.push({modulo:'SHP', det:svcSHP.join(', '), locais:local});
+      (d.esguichos||[]).forEach(e   => { if(e.modelo||e.qt){ addShp('Esguicho', e.modelo?e.modelo+'"':'', e.qt, '', local); adicionou=true; }});
+      (d.adaptadores||[]).forEach(a => { if(a.modelo||a.qt){ addShp('Adaptador', a.modelo?a.modelo+'"':'', a.qt, '', local); adicionou=true; }});
+      (d.tampoes||[]).forEach(t     => { if(t.modelo||t.qt){ addShp('Tampão', t.modelo?t.modelo+'"':'', t.qt, '', local); adicionou=true; }});
+      (d.mangueiras||[]).forEach(m  => { if(m.modelo||m.mts||m.tipo){ addShp('Mangueira', m.modelo?m.modelo+'"':'', 1, (m.mts||'')+'m Tipo '+(m.tipo||''), local); adicionou=true; }});
+      (d.registros||[]).forEach(r   => { if(r.modelo||r.qt){ addShp('Registro', r.modelo?r.modelo+'°':'', r.qt, '', local); adicionou=true; }});
+      if(d.chave && d.chave!=='0' && d.chave!==''){ addShp('Chave','',d.chave,'',local); adicionou=true; }
+      if(d.pbrita==='S'||d.tpres||d.ptub||d.pcon||d.tpress==='S') {
+        const svc=[];
+        if(d.pbrita==='S') svc.push('Pintura+brita');
+        if(d.tpres&&d.tpres!=='0') svc.push('Tanque pressão QT='+d.tpres);
+        if(d.ptub&&d.ptub!=='0') svc.push('Pintura tubulação QT='+d.ptub);
+        if(d.pcon&&d.pcon!=='0') svc.push('Pintura conexões QT='+d.pcon);
+        if(d.tpress==='S') svc.push('Teste pressão e vazão');
+        if(svc.length){ servicos.push({modulo:'SHP — Serviços', det:svc.join(', '), locais:local}); adicionou=true; }
+      }
     }
 
     if(modId==='pcf') {
       (d.portas||[]).forEach(p => {
         if(p.local||p.altura||p.problema) {
-          portas.push({
-            local: local+(p.local?' — '+p.local:''),
-            tam: (p.altura||'?')+'×'+(p.largura||'?')+'m',
-            dupla: p.dupla==='S'?'Sim':'Não',
-            anti: p.antipanico==='S'?'Sim':'Não',
-            prob: p.problema||''
-          });
+          portas.push({ local:local+(p.local?' — '+p.local:''), tam:(p.altura||'?')+'×'+(p.largura||'?')+'m', dupla:p.dupla==='S'?'Sim':'Não', anti:p.antipanico==='S'?'Sim':'Não', prob:p.problema||'' });
+          adicionou=true;
         }
       });
-      const svcPCF=[];
-      if(d.lubrificacao) svcPCF.push('Lubrificação: '+d.lubrificacao);
-      if(d.alinhamento) svcPCF.push('Alinhamento: '+d.alinhamento);
-      if(svcPCF.length) servicos.push({modulo:'PCF', det:svcPCF.join(', '), locais:local});
+      if(d.lubrificacao||d.alinhamento) {
+        const svc=[]; if(d.lubrificacao) svc.push('Lubrificação: '+d.lubrificacao); if(d.alinhamento) svc.push('Alinhamento: '+d.alinhamento);
+        if(svc.length){ servicos.push({modulo:'PCF — Serviços', det:svc.join(', '), locais:local}); adicionou=true; }
+      }
     }
 
     if(modId==='iluminacao') {
       const svc=[];
       if(d.queimadas) svc.push('Queimadas: '+d.queimadas);
-      if(d.novas)     svc.push('Novas: '+d.novas);
-      if(d.fiacao)    svc.push('Fiação: '+d.fiacao);
-      if(d.dif)       svc.push('Dificuldade: '+d.dif);
-      if(svc.length) servicos.push({modulo:'Iluminação', det:svc.join(', '), locais:local});
+      if(d.novas) svc.push('Novas: '+d.novas);
+      if(d.fiacao) svc.push('Fiação: '+d.fiacao);
+      if(d.dif) svc.push('Dificuldade: '+d.dif);
+      if(svc.length){ servicos.push({modulo:'Iluminação de Emergência', det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='bomba') {
       const svc=[];
-      if(d.cv)           svc.push('Bomba '+d.cv);
-      if(d.tub)          svc.push('Tubulação '+d.tub+'"');
+      if(d.cv) svc.push('Bomba '+d.cv);
+      if(d.tub) svc.push('Tubulação '+d.tub+'"');
       if(d.manometro==='S') svc.push('Trocar manômetro');
       if(d.pressostato==='S') svc.push('Trocar pressostato'+(d.alt?' ('+d.alt+')':''));
       if(d.quadro_troca==='S') svc.push('Trocar quadro comando');
-      if(svc.length) servicos.push({modulo:'Bomba de Incêndio', det:svc.join(', '), locais:local});
+      if(svc.length){ servicos.push({modulo:'Bomba de Incêndio', det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='alarme') {
       const svc=[];
-      if(d.bat_troca && d.bat_troca!=='0') svc.push('Trocar '+d.bat_troca+' bateria(s)');
-      if(d.sir_troca && d.sir_troca!=='0') svc.push('Trocar '+d.sir_troca+' sirene(s)');
+      if(d.bat_troca&&d.bat_troca!=='0') svc.push('Trocar '+d.bat_troca+' bateria(s)');
+      if(d.sir_troca&&d.sir_troca!=='0') svc.push('Trocar '+d.sir_troca+' sirene(s)');
       if(d.central_nova==='S') svc.push('Central nova');
-      if(svc.length) servicos.push({modulo:'Alarme'+(d.marca?' ('+d.marca+')':''), det:svc.join(', '), locais:local});
+      if(svc.length){ servicos.push({modulo:'Alarme'+(d.marca?' ('+d.marca+')':''), det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='botoeiras') {
       const svc=[];
-      if(d.qt_troca && d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' botoeira(s)'+(d.local_troca?' em '+d.local_troca:''));
-      if(d.qt_novas && d.qt_novas!=='0') svc.push(d.qt_novas+' nova(s)'+(d.local_novas?' em '+d.local_novas:''));
-      if(svc.length) servicos.push({modulo:'Botoeiras', det:svc.join(', '), locais:local});
+      if(d.qt_troca&&d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' botoeira(s)'+(d.local_troca?' em '+d.local_troca:''));
+      if(d.qt_novas&&d.qt_novas!=='0') svc.push(d.qt_novas+' nova(s)'+(d.local_novas?' em '+d.local_novas:''));
+      if(svc.length){ servicos.push({modulo:'Botoeiras', det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='detector') {
       const svc=[];
-      if(d.qt_troca && d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' detector(es)'+(d.local_troca?' em '+d.local_troca:''));
-      if(d.qt_novas && d.qt_novas!=='0') svc.push(d.qt_novas+' novo(s)'+(d.local_novas?' em '+d.local_novas:''));
-      if(svc.length) servicos.push({modulo:'Detector de Fumaça', det:svc.join(', '), locais:local});
+      if(d.qt_troca&&d.qt_troca!=='0') svc.push('Trocar '+d.qt_troca+' detector(es)'+(d.local_troca?' em '+d.local_troca:''));
+      if(d.qt_novas&&d.qt_novas!=='0') svc.push(d.qt_novas+' novo(s)'+(d.local_novas?' em '+d.local_novas:''));
+      if(svc.length){ servicos.push({modulo:'Detector de Fumaça', det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='sprinkler') {
       const svc=[];
-      if(d.bico_qt && d.bico_qt!=='0') svc.push(d.bico_qt+' bico(s)'+(d.bico_cor?' cor '+d.bico_cor:''));
-      if(d.gaiola_qt && d.gaiola_qt!=='0') svc.push(d.gaiola_qt+' gaiola(s)');
+      if(d.bico_qt&&d.bico_qt!=='0') svc.push(d.bico_qt+' bico(s)'+(d.bico_cor?' cor '+d.bico_cor:''));
+      if(d.gaiola_qt&&d.gaiola_qt!=='0') svc.push(d.gaiola_qt+' gaiola(s)');
       if(d.pintura==='S') svc.push('Pintura tubulação');
       if(d.teste==='S') svc.push('Teste rede'+(d.horas?' '+d.horas:''));
-      if(svc.length) servicos.push({modulo:'Sprinkler', det:svc.join(', '), locais:local});
+      if(svc.length){ servicos.push({modulo:'Sprinkler', det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='gas') {
       const svc=[];
-      if(d.clk_troca && d.clk_troca!=='0') svc.push('Trocar '+d.clk_troca+' click/regulador');
-      if(d.con_mang && d.con_mang!=='0')   svc.push('Trocar '+d.con_mang+' conexão mangueira');
-      if(d.med_mts && d.med_mts!=='0')     svc.push('Trocar medidores '+d.med_mts+' mts');
-      if(d.pint_qt && d.pint_qt!=='0')     svc.push('Pintura '+d.pint_qt+' tubulação'+(d.pint_mts?' ('+d.pint_mts+' mts)':''));
-      if(d.estanque==='S')                 svc.push('Teste estanqueidade');
-      if(svc.length) servicos.push({modulo:'Gás'+(d.tipo?' '+d.tipo:''), det:svc.join(', '), locais:local});
+      if(d.clk_troca&&d.clk_troca!=='0') svc.push('Trocar '+d.clk_troca+' click/regulador');
+      if(d.con_mang&&d.con_mang!=='0') svc.push('Trocar '+d.con_mang+' conexão mangueira');
+      if(d.med_mts&&d.med_mts!=='0') svc.push('Trocar medidores '+d.med_mts+' mts');
+      if(d.pint_qt&&d.pint_qt!=='0') svc.push('Pintura '+d.pint_qt+' tubulação'+(d.pint_mts?' ('+d.pint_mts+' mts)':''));
+      if(d.estanque==='S') svc.push('Teste estanqueidade');
+      if(svc.length){ servicos.push({modulo:'Gás'+(d.tipo?' '+d.tipo:''), det:svc.join(', '), locais:local}); adicionou=true; }
     }
 
     if(modId==='escada') {
@@ -1359,7 +1357,13 @@ function buildConsolidado(cfg) {
       if(d.lubrificacao==='N') svc.push('Necessita lubrificação');
       if(d.botao==='NAO') svc.push('Botão emergência não operante');
       if(d.grande==='NAO') svc.push('Grade não presente');
-      if(svc.length) servicos.push({modulo:'Escada Pressurizada'+(d.motor?' ('+d.motor+')':''), det:svc.join(', '), locais:local});
+      if(svc.length){ servicos.push({modulo:'Escada Pressurizada'+(d.motor?' ('+d.motor+')':''), det:svc.join(', '), locais:local}); adicionou=true; }
+    }
+
+    // FALLBACK: se nenhum detalhe foi gerado mas o módulo está pendente, gera uma linha genérica
+    if(!adicionou) {
+      const modNomes={para_raio:'Para-Raio',sinalizacao:'Sinalizações',iluminacao:'Iluminação de Emergência',botoeiras:'Botoeiras',detector:'Detector de Fumaça',shp:'SHP — Hidrantes',pcf:'Portas Corta-Fogo',alarme:'Central de Alarme',bomba:'Bomba de Incêndio',sprinkler:'Rede Sprinkler',gas:'Central de Gás',escada:'Escada Pressurizada'};
+      servicos.push({modulo:modNomes[modId]||modId, det:d.status.toUpperCase()+' — verificar detalhes'+(d.obs?' | Obs: '+d.obs:''), locais:local});
     }
   }
 

@@ -448,7 +448,7 @@ function initD(id) {
   const b = {status:null, obs:''};
   if(id==='sinalizacao') return {...b, rota:{status:null,items:SIN_ROTA.map(()=>({qt:'',manut:'',novo:''}))}, ext:{status:null,items:SIN_EXT.map(()=>({qt:'',manut:'',novo:''}))}, outros:{status:null,items:SIN_OUT.map(()=>({qt:'',manut:'',novo:''}))}, geral:{status:null,items:SIN_GER.map(()=>({qt:'',manut:'',novo:''}))}};
   if(id==='para_raio')  return {...b, captacao:{status:null,antenas:'',ant_at:'',obs:'',mat:PR_CAPT.map(()=>({qt:''}))}, condutores:{status:null,tampas:'',tap_at:'',escada:'',esc_at:'',medicao:'',obs:'',mat:PR_COND.map(()=>({qt:''}))}, caixas:{status:null,obs:'',mat:PR_CX.map(()=>({qt:''}))}, aterramento:{status:null,cond_at:'',obs:'',mat:PR_AT.map(()=>({qt:''}))}};
-  if(id==='iluminacao')  return {...b,sistema:'autonomo',qtsAut:'',qtsCen:'',queimadas:'',novas:'',fiacao:'',dif:''};
+  if(id==='iluminacao')  return {...b,sistema:'autonomo',qtsAut:'',qtsCen:'',qt_queimadas:'',local_queimadas:'',qt_novas:'',local_novas:'',fiacao:'',dif:''};
   if(id==='botoeiras')   return {...b,marca:'',qt:'',qt_troca:'',local_troca:'',qt_novas:'',local_novas:'',revisao:'',fiacao:''};
   if(id==='detector')    return {...b,marca:'',qt:'',qt_troca:'',local_troca:'',qt_novas:'',local_novas:'',revisao:'',fiacao:''};
   if(id==='shp')         return {...b,tipo:'bomba',cx:'',
@@ -680,8 +680,10 @@ function renderBody(id, d, nivelStr) {
     stRow('iluminacao',d.status)+
     '<div class="pend-sec'+(isPend?' vis':'')+(d.status==='reprovado'?' rep':'')+'">'+
     '<div class="pend-lbl">⚠ Detalhe a situação</div>'+
-    fta('il_que','Queimadas — quantas e local?',d.queimadas,'Ex: 2 queimadas no 3° andar, corredor...')+
-    fta('il_nov','Novas — tipo e local?',d.novas,'Ex: 1 bloco autônomo no hall de entrada...')+
+    '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text2);margin:6px 0 4px">Lâmpadas queimadas</div>'+
+    '<div class="r2">'+fi('il_qtq','Quantidade',d.qt_queimadas,'Ex: 10')+fi('il_loq','Local / Motivo',d.local_queimadas,'Ex: 3° andar corredor')+'</div>'+
+    '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--text2);margin:8px 0 4px">Lâmpadas novas necessárias</div>'+
+    '<div class="r2">'+fi('il_qtn','Quantidade',d.qt_novas,'Ex: 5')+fi('il_lon','Tipo e local',d.local_novas,'Ex: bloco autônomo, hall')+'</div>'+
     '<div class="r2">'+fi('il_fiac','Fiação/Tomadas',d.fiacao,'Estado')+fi('il_dif','Grau de dificuldade',d.dif,'Fácil/Médio/Difícil')+'</div>'+
     '</div>'
   );
@@ -948,7 +950,7 @@ function saveFieldsFor(id, dObj) {
     ['captacao','condutores','caixas','aterramento'].forEach(k=>{const el=document.getElementById('obs-para_raio-'+k);if(el)d[k].obs=el.value;});
     return;
   }
-  if(id==='iluminacao')  {Object.assign(d,{sistema:gv('il_sis'),qtsAut:gv('il_aut'),qtsCen:gv('il_cen'),queimadas:gv('il_que'),novas:gv('il_nov'),fiacao:gv('il_fiac'),dif:gv('il_dif')});return;}
+  if(id==='iluminacao')  {Object.assign(d,{sistema:gv('il_sis'),qtsAut:gv('il_aut'),qtsCen:gv('il_cen'),qt_queimadas:gv('il_qtq'),local_queimadas:gv('il_loq'),qt_novas:gv('il_qtn'),local_novas:gv('il_lon'),fiacao:gv('il_fiac'),dif:gv('il_dif')});return;}
   if(id==='botoeiras')   {Object.assign(d,{marca:gv('bo_mar'),qt:gv('bo_qt'),qt_troca:gv('bo_tro'),local_troca:gv('bo_ltr'),qt_novas:gv('bo_nov'),local_novas:gv('bo_lno'),revisao:gv('bo_rev'),fiacao:gv('bo_fiac')});return;}
   if(id==='detector')    {Object.assign(d,{marca:gv('df_mar'),qt:gv('df_qt'),qt_troca:gv('df_tro'),local_troca:gv('df_ltr'),qt_novas:gv('df_nov'),local_novas:gv('df_lno'),revisao:gv('df_rev'),fiacao:gv('df_fiac')});return;}
   if(id==='shp') {
@@ -1076,13 +1078,13 @@ function getDetalhes(modId, d) {
   }
 
   if(modId==='iluminacao') {
-    if(d.sistema)    lines.push('Sistema: '+(d.sistema==='autonomo'?'Bloco Autônomo':'Central Bolinha'));
-    if(d.qtsAut)     lines.push('QT Autônomo='+d.qtsAut);
-    if(d.qtsCen)     lines.push('QT Central='+d.qtsCen);
-    if(d.queimadas)  lines.push('Queimadas: '+d.queimadas);
-    if(d.novas)      lines.push('Novas: '+d.novas);
-    if(d.fiacao)     lines.push('Fiação: '+d.fiacao);
-    if(d.dif)        lines.push('Dificuldade: '+d.dif);
+    if(d.sistema)         lines.push('Sistema: '+(d.sistema==='autonomo'?'Bloco Autônomo':'Central Bolinha'));
+    if(d.qtsAut)          lines.push('QT Autônomo='+d.qtsAut);
+    if(d.qtsCen)          lines.push('QT Central='+d.qtsCen);
+    if(d.qt_queimadas)    lines.push('Queimadas QT='+d.qt_queimadas+(d.local_queimadas?' Local: '+d.local_queimadas:''));
+    if(d.qt_novas)        lines.push('Novas QT='+d.qt_novas+(d.local_novas?' Tipo/Local: '+d.local_novas:''));
+    if(d.fiacao)          lines.push('Fiação: '+d.fiacao);
+    if(d.dif)             lines.push('Dificuldade: '+d.dif);
   }
 
   if(modId==='botoeiras') {
@@ -1255,7 +1257,7 @@ function buildConsolidado(cfg) {
       [{k:'rota',l:'Rota de Fuga',arr:SIN_ROTA},{k:'ext',l:'Extintores',arr:SIN_EXT},{k:'outros',l:'Outros',arr:SIN_OUT},{k:'geral',l:'Sinalização Geral',arr:SIN_GER}].forEach(g=>{
         const sub=d[g.k]; if(!sub) return;
         (sub.items||[]).forEach((item,i)=>{
-          if(item.manut||item.novo) { addSin(g.l, g.arr[i], item.qt, item.manut, item.novo); adicionou=true; }
+          if(item.qt||item.manut||item.novo) { addSin(g.l, g.arr[i], item.qt, item.manut, item.novo); adicionou=true; }
         });
       });
     }
@@ -1292,12 +1294,17 @@ function buildConsolidado(cfg) {
     }
 
     if(modId==='iluminacao') {
-      const svc=[];
-      if(d.queimadas) svc.push('Queimadas: '+d.queimadas);
-      if(d.novas) svc.push('Novas: '+d.novas);
-      if(d.fiacao) svc.push('Fiação: '+d.fiacao);
-      if(d.dif) svc.push('Dificuldade: '+d.dif);
-      if(svc.length){ servicos.push({modulo:'Iluminação de Emergência', det:svc.join(', '), locais:local}); adicionou=true; }
+      if(d.qt_queimadas && d.qt_queimadas!=='0') {
+        servicos.push({modulo:'Iluminação — Queimadas', det:(d.local_queimadas||'Verificar local')+(d.dif?' | Dificuldade: '+d.dif:''), locais:local});
+        addMat('Iluminação', 'Lâmpadas queimadas p/ substituição', d.qt_queimadas, 'un', local);
+        adicionou=true;
+      }
+      if(d.qt_novas && d.qt_novas!=='0') {
+        servicos.push({modulo:'Iluminação — Novas', det:(d.local_novas||'Verificar tipo/local'), locais:local});
+        addMat('Iluminação', 'Lâmpadas novas', d.qt_novas, 'un', local);
+        adicionou=true;
+      }
+      if(d.fiacao) { servicos.push({modulo:'Iluminação — Fiação', det:'Fiação: '+d.fiacao, locais:local}); adicionou=true; }
     }
 
     if(modId==='bomba') {
